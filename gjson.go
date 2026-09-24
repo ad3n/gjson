@@ -315,7 +315,7 @@ func (t Result) Map() map[string]Result {
 func (t Result) Get(path string) Result {
 	r := Get(t.Raw, path)
 	if r.Indexes != nil {
-		for i := 0; i < len(r.Indexes); i++ {
+		for i := range r.Indexes {
 			r.Indexes[i] += t.Index
 		}
 	} else {
@@ -442,11 +442,11 @@ func (t Result) arrayOrMap(vc byte, valueize bool) (r arrayOrMapResult) {
 end:
 	if t.Indexes != nil {
 		if len(t.Indexes) != len(r.a) {
-			for i := 0; i < len(r.a); i++ {
+			for i := range r.a {
 				r.a[i].Index = 0
 			}
 		} else {
-			for i := 0; i < len(r.a); i++ {
+			for i := range r.a {
 				r.a[i].Index = t.Indexes[i]
 			}
 		}
@@ -640,9 +640,10 @@ func (t Result) Value() any {
 		return t.Num
 	case JSON:
 		r := t.arrayOrMap(0, true)
-		if r.vc == '{' {
+		switch r.vc {
+		case '{':
 			return r.oi
-		} else if r.vc == '[' {
+		case '[':
 			return r.ai
 		}
 		return nil
@@ -3029,7 +3030,7 @@ func modJoin(json, arg string) string {
 			})
 			return true
 		})
-		for i := 0; i < len(keys); i++ {
+		for i := range keys {
 			if i > 0 {
 				out = append(out, ',')
 			}
@@ -3095,75 +3096,60 @@ func modGroup(json, arg string) string {
 	return string(data)
 }
 
-type stringHeader struct {
-	data unsafe.Pointer
-	len  int
-}
-
-type sliceHeader struct {
-	data unsafe.Pointer
-	len  int
-	cap  int
-}
-
 func getBytes(json []byte, path string) Result {
-	var result Result
-	if json != nil {
-		result = Get(*(*string)(unsafe.Pointer(&json)), path)
-
-		rawhi := *(*stringHeader)(unsafe.Pointer(&result.Raw))
-		strhi := *(*stringHeader)(unsafe.Pointer(&result.Str))
-
-		rawh := sliceHeader{data: rawhi.data, len: rawhi.len, cap: rawhi.len}
-		strh := sliceHeader{data: strhi.data, len: strhi.len, cap: rawhi.len}
-		if strh.data == nil {
-			if rawh.data == nil {
-				result.Raw = ""
-			} else {
-				result.Raw = string(*(*[]byte)(unsafe.Pointer(&rawh)))
-			}
-			result.Str = ""
-		} else if rawh.data == nil {
-			result.Raw = ""
-
-			result.Str = string(*(*[]byte)(unsafe.Pointer(&strh)))
-		} else if uintptr(strh.data) >= uintptr(rawh.data) &&
-			uintptr(strh.data)+uintptr(strh.len) <=
-				uintptr(rawh.data)+uintptr(rawh.len) {
-			start := uintptr(strh.data) - uintptr(rawh.data)
-
-			result.Raw = string(*(*[]byte)(unsafe.Pointer(&rawh)))
-
-			result.Str = result.Raw[start : start+uintptr(strh.len)]
-		} else {
-			result.Raw = string(*(*[]byte)(unsafe.Pointer(&rawh)))
-			result.Str = string(*(*[]byte)(unsafe.Pointer(&strh)))
-		}
+	if json == nil {
+		return Result{}
 	}
+
+	result := Get(bytesString(json), path)
+	rawData := unsafe.StringData(result.Raw)
+	strData := unsafe.StringData(result.Str)
+
+	if len(result.Str) == 0 {
+		result.Raw = string(stringBytes(result.Raw))
+		result.Str = ""
+		return result
+	}
+
+	if len(result.Raw) == 0 {
+		result.Raw = ""
+		result.Str = string(stringBytes(result.Str))
+		return result
+	}
+
+	if uintptr(unsafe.Pointer(strData)) >= uintptr(unsafe.Pointer(rawData)) &&
+		uintptr(unsafe.Pointer(strData))+uintptr(len(result.Str)) <=
+			uintptr(unsafe.Pointer(rawData))+uintptr(len(result.Raw)) {
+		start := uintptr(unsafe.Pointer(strData)) - uintptr(unsafe.Pointer(rawData))
+		result.Raw = string(stringBytes(result.Raw))
+		result.Str = result.Raw[start : start+uintptr(len(result.Str))]
+		return result
+	}
+
+	result.Raw = string(stringBytes(result.Raw))
+	result.Str = string(stringBytes(result.Str))
 	return result
 }
 
 func fillIndex(json string, c *parseContext) {
-	if len(c.value.Raw) > 0 && !c.calcd {
-		jhdr := *(*stringHeader)(unsafe.Pointer(&json))
-		rhdr := *(*stringHeader)(unsafe.Pointer(&(c.value.Raw)))
-		c.value.Index = int(uintptr(rhdr.data) - uintptr(jhdr.data))
-		if c.value.Index < 0 || c.value.Index >= len(json) {
-			c.value.Index = 0
-		}
+	if len(c.value.Raw) == 0 || c.calcd {
+		return
+	}
+
+	jsonData := unsafe.StringData(json)
+	rawData := unsafe.StringData(c.value.Raw)
+	c.value.Index = int(uintptr(unsafe.Pointer(rawData)) - uintptr(unsafe.Pointer(jsonData)))
+	if c.value.Index < 0 || c.value.Index >= len(json) {
+		c.value.Index = 0
 	}
 }
 
 func stringBytes(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(&sliceHeader{
-		data: (*stringHeader)(unsafe.Pointer(&s)).data,
-		len:  len(s),
-		cap:  len(s),
-	}))
+	return unsafe.Slice(unsafe.StringData(s), len(s))
 }
 
 func bytesString(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
 func revSquash(json string) string {

@@ -1182,19 +1182,19 @@ func TestIssue54(t *testing.T) {
 	var r []Result
 	json := `{"MarketName":null,"Nounce":6115}`
 	r = GetMany(json, "Nounce", "Buys", "Sells", "Fills")
-	if strings.Replace(fmt.Sprintf("%v", r), " ", "", -1) != "[6115]" {
+	if strings.ReplaceAll(fmt.Sprintf("%v", r), " ", "") != "[6115]" {
 		t.Fatalf("expected '%v', got '%v'", "[6115]",
-			strings.Replace(fmt.Sprintf("%v", r), " ", "", -1))
+			strings.ReplaceAll(fmt.Sprintf("%v", r), " ", ""))
 	}
 	r = GetMany(json, "Nounce", "Buys", "Sells")
-	if strings.Replace(fmt.Sprintf("%v", r), " ", "", -1) != "[6115]" {
+	if strings.ReplaceAll(fmt.Sprintf("%v", r), " ", "") != "[6115]" {
 		t.Fatalf("expected '%v', got '%v'", "[6115]",
-			strings.Replace(fmt.Sprintf("%v", r), " ", "", -1))
+			strings.ReplaceAll(fmt.Sprintf("%v", r), " ", ""))
 	}
 	r = GetMany(json, "Nounce")
-	if strings.Replace(fmt.Sprintf("%v", r), " ", "", -1) != "[6115]" {
+	if strings.ReplaceAll(fmt.Sprintf("%v", r), " ", "") != "[6115]" {
 		t.Fatalf("expected '%v', got '%v'", "[6115]",
-			strings.Replace(fmt.Sprintf("%v", r), " ", "", -1))
+			strings.ReplaceAll(fmt.Sprintf("%v", r), " ", ""))
 	}
 }
 

@@ -85,6 +85,13 @@ func TestNumericQueryCompatibility(t *testing.T) {
 
 func TestGetBytesOwnershipAfterDecode(t *testing.T) {
 	for _, doc := range []string{
+		``,
+		`{}`,
+		`{"v":""}`,
+		`{"v":null}`,
+		`{"v":false}`,
+		`{"v":123}`,
+		`{"v":{"nested":true}}`,
 		`{"v":"plain"}`,
 		`{"v":"hello\nworld"}`,
 		`{"v":"\ud83d\ude00"}`,
@@ -177,4 +184,22 @@ func FuzzStringDecode(f *testing.F) {
 			t.Fatalf("decoded %q, want %q", got.Str, want)
 		}
 	})
+}
+
+func TestModernUnsafeConversions(t *testing.T) {
+	for _, data := range [][]byte{nil, {}, make([]byte, 0, 8), []byte("hello"), {0, 255, 128}} {
+		got := bytesString(data)
+		if got != string(data) {
+			t.Fatalf("bytesString(%v) = %q", data, got)
+		}
+
+		view := stringBytes(got)
+		if string(view) != got || len(view) != len(got) || cap(view) != len(got) {
+			t.Fatalf("stringBytes(%q) = %v (len %d, cap %d)", got, view, len(view), cap(view))
+		}
+
+		if result := GetBytes(data, "v"); !reflect.DeepEqual(result, Result{}) {
+			t.Fatalf("unexpected result: %#v", result)
+		}
+	}
 }
