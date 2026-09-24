@@ -1,7 +1,0 @@
-go version go1.26.8 darwin/arm64
-baseline: 8d89927eff414537088a6092d53fecf6711c1e75
-samples: 10
-benchtime: 200ms
-cpu: 1
-0aba805d2162372ee887f31b9f05c59fca9c60a6fd243d486686631177fbcc4a  /Users/aden/Projects/gjson/gjson.go
-e1f415a0808ab04e470495f8d6b23d1fc103ae5b30dd0f45d4f3544542068786  /Users/aden/Projects/gjson/benchmark_test.go
