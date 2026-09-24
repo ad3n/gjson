@@ -1,0 +1,312 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/ad3n/gjson
+cpu: Apple M3 Pro
+BenchmarkLookup/Get/name         	 4202139	        31.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/name    	 1572745	        72.79 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/Get/escaped      	  942624	       130.2 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/escaped 	  817275	       192.8 ns/op	      48 B/op	       3 allocs/op
+BenchmarkLookup/Get/unicode      	  854649	       187.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/unicode 	 1000000	       204.4 ns/op	       8 B/op	       1 allocs/op
+BenchmarkLookup/Get/single       	  899880	       121.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/single  	  841735	       364.4 ns/op	       4 B/op	       1 allocs/op
+BenchmarkLookup/Get/long         	  181068	      1278 ns/op	     112 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/long    	  189794	       560.1 ns/op	     336 B/op	       3 allocs/op
+BenchmarkLookup/Get/age          	  603039	       184.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/age     	  686744	       171.9 ns/op	       2 B/op	       1 allocs/op
+BenchmarkLookup/Get/missing      	  645811	       188.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/missing 	  584107	       200.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/true               	55195684	         2.488 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/TrUe               	45117021	         2.441 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/FALSE              	52157857	         2.219 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/invalid            	55166072	         2.208 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDecodeDensity/unicode   	   58916	      1983 ns/op	     896 B/op	       2 allocs/op
+BenchmarkDecodeDensity/invalid   	 1000000	       120.1 ns/op	     144 B/op	       1 allocs/op
+BenchmarkProjection/0            	 2284050	        52.41 ns/op	      16 B/op	       2 allocs/op
+BenchmarkProjection/3            	  389878	       318.2 ns/op	      48 B/op	       2 allocs/op
+BenchmarkProjection/64           	   20442	      5863 ns/op	    3680 B/op	      10 allocs/op
+BenchmarkProjection/1000         	    1322	     87087 ns/op	   66368 B/op	      24 allocs/op
+BenchmarkQuery/#(id>=1000).id    	    2161	     56400 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>1000).id     	    2065	     55940 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>=1000)#.id   	    2020	     57605 ns/op	      24 B/op	       3 allocs/op
+BenchmarkQuery/#(id>invalid).id  	  591739	       232.5 ns/op	      56 B/op	       2 allocs/op
+BenchmarkQuery/#(id<invalid).id  	    2056	     57740 ns/op	      56 B/op	       2 allocs/op
+BenchmarkIteration/Array         	  563632	       209.1 ns/op	     560 B/op	       3 allocs/op
+BenchmarkIteration/ForEach       	 2016480	        59.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIteration/Values        	 1687797	        71.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendReuse             	 4116831	        28.64 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this    	 4891935	        24.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this|v  	 2713624	        44.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/v.@this  	 1396870	        85.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@missing 	 3850802	        30.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReverse/array/0         	 1726437	        71.37 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/object/0        	 1994977	        63.33 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/array/3         	  382281	       320.4 ns/op	     592 B/op	       4 allocs/op
+BenchmarkReverse/object/3        	  256222	       476.8 ns/op	    1216 B/op	       4 allocs/op
+BenchmarkReverse/array/64        	   29214	      4057 ns/op	   12592 B/op	       8 allocs/op
+BenchmarkReverse/object/64       	   18087	      6389 ns/op	   24672 B/op	       8 allocs/op
+BenchmarkReverse/array/1000      	    2410	     46297 ns/op	  190064 B/op	      12 allocs/op
+BenchmarkReverse/object/1000     	    1129	    106333 ns/op	  482848 B/op	      13 allocs/op
+BenchmarkReverse/array/2048      	     980	    123387 ns/op	  496496 B/op	      14 allocs/op
+BenchmarkReverse/object/2048     	     312	    404868 ns/op	 1467936 B/op	      16 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/ad3n/gjson
+cpu: Apple M3 Pro
+BenchmarkLookup/Get/name         	 3146140	        44.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/name    	 1796779	        70.35 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/Get/escaped      	 1000000	       199.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/escaped 	  375752	       287.1 ns/op	      48 B/op	       3 allocs/op
+BenchmarkLookup/Get/unicode      	  700269	       178.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/unicode 	  504333	       227.6 ns/op	       8 B/op	       1 allocs/op
+BenchmarkLookup/Get/single       	  711234	       245.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/single  	  362328	       303.0 ns/op	       4 B/op	       1 allocs/op
+BenchmarkLookup/Get/long         	  569947	       371.9 ns/op	     112 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/long    	  380559	       384.8 ns/op	     336 B/op	       3 allocs/op
+BenchmarkLookup/Get/age          	  676420	       194.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/age     	  642369	       345.2 ns/op	       2 B/op	       1 allocs/op
+BenchmarkLookup/Get/missing      	  282208	       395.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/missing 	  310699	       350.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/true               	28104966	         3.677 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/TrUe               	18119360	        10.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/FALSE              	26359623	        18.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/invalid            	24305234	        25.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDecodeDensity/unicode   	   28372	      3951 ns/op	     896 B/op	       2 allocs/op
+BenchmarkDecodeDensity/invalid   	 1000000	       256.1 ns/op	     144 B/op	       1 allocs/op
+BenchmarkProjection/0            	 1000000	       121.1 ns/op	      16 B/op	       2 allocs/op
+BenchmarkProjection/3            	  158538	      1099 ns/op	      48 B/op	       2 allocs/op
+BenchmarkProjection/64           	    9514	     11790 ns/op	    3680 B/op	      10 allocs/op
+BenchmarkProjection/1000         	     727	    682617 ns/op	   66368 B/op	      24 allocs/op
+BenchmarkQuery/#(id>=1000).id    	     225	    502625 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>1000).id     	     627	    455351 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>=1000)#.id   	     260	    464841 ns/op	      24 B/op	       3 allocs/op
+BenchmarkQuery/#(id>invalid).id  	  447266	       810.9 ns/op	      56 B/op	       2 allocs/op
+BenchmarkQuery/#(id<invalid).id  	     100	   1583867 ns/op	      56 B/op	       2 allocs/op
+BenchmarkIteration/Array         	  167319	      1568 ns/op	     560 B/op	       3 allocs/op
+BenchmarkIteration/ForEach       	 1000000	       382.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIteration/Values        	  536612	       393.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendReuse             	  931706	       160.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this    	  771476	       165.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this|v  	  612602	       252.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/v.@this  	  539769	       325.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@missing 	 1000000	       247.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReverse/array/0         	  238958	       751.2 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/object/0        	  670219	       671.4 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/array/3         	   57861	      2900 ns/op	     592 B/op	       4 allocs/op
+BenchmarkReverse/object/3        	  122017	      1546 ns/op	    1216 B/op	       4 allocs/op
+BenchmarkReverse/array/64        	   24848	      4591 ns/op	   12592 B/op	       8 allocs/op
+BenchmarkReverse/object/64       	   14726	      7730 ns/op	   24672 B/op	       8 allocs/op
+BenchmarkReverse/array/1000      	    2386	     55111 ns/op	  190064 B/op	      12 allocs/op
+BenchmarkReverse/object/1000     	    1089	    146918 ns/op	  482848 B/op	      13 allocs/op
+BenchmarkReverse/array/2048      	     961	    130660 ns/op	  496496 B/op	      14 allocs/op
+BenchmarkReverse/object/2048     	     320	    333734 ns/op	 1467936 B/op	      16 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/ad3n/gjson
+cpu: Apple M3 Pro
+BenchmarkLookup/Get/name         	 4712280	        25.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/name    	 2635861	        52.40 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/Get/escaped      	 1495330	        81.14 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/escaped 	 1000000	       108.8 ns/op	      48 B/op	       3 allocs/op
+BenchmarkLookup/Get/unicode      	 1586646	        75.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/unicode 	 1000000	       103.0 ns/op	       8 B/op	       1 allocs/op
+BenchmarkLookup/Get/single       	 1558144	        73.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/single  	 1378960	        85.32 ns/op	       4 B/op	       1 allocs/op
+BenchmarkLookup/Get/long         	  643963	       208.6 ns/op	     112 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/long    	  512774	       374.0 ns/op	     336 B/op	       3 allocs/op
+BenchmarkLookup/Get/age          	  505670	       357.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/age     	  698570	       334.3 ns/op	       2 B/op	       1 allocs/op
+BenchmarkLookup/Get/missing      	  517417	       257.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/missing 	  550080	       229.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/true               	35066361	         2.945 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/TrUe               	50207439	         2.310 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/FALSE              	50551154	         2.260 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/invalid            	57519471	         2.383 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDecodeDensity/unicode   	   55472	      2312 ns/op	     896 B/op	       2 allocs/op
+BenchmarkDecodeDensity/invalid   	  683874	       157.3 ns/op	     144 B/op	       1 allocs/op
+BenchmarkProjection/0            	 1719034	        70.14 ns/op	      16 B/op	       2 allocs/op
+BenchmarkProjection/3            	  328137	       474.7 ns/op	      48 B/op	       2 allocs/op
+BenchmarkProjection/64           	   17750	      6922 ns/op	    3680 B/op	      10 allocs/op
+BenchmarkProjection/1000         	    1234	     94951 ns/op	   66368 B/op	      24 allocs/op
+BenchmarkQuery/#(id>=1000).id    	    2168	     51919 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>1000).id     	    2276	     51000 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>=1000)#.id   	    2400	     51372 ns/op	      24 B/op	       3 allocs/op
+BenchmarkQuery/#(id>invalid).id  	  678157	       195.7 ns/op	      56 B/op	       2 allocs/op
+BenchmarkQuery/#(id<invalid).id  	    2348	     48936 ns/op	      56 B/op	       2 allocs/op
+BenchmarkIteration/Array         	  685354	       181.1 ns/op	     560 B/op	       3 allocs/op
+BenchmarkIteration/ForEach       	 2265750	        53.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIteration/Values        	 1860136	        67.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendReuse             	 4075826	        27.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this    	 5443513	        22.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this|v  	 3016353	        39.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/v.@this  	 1577502	        76.64 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@missing 	 4287870	        27.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReverse/array/0         	 1929963	        64.28 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/object/0        	 2213745	        56.11 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/array/3         	  422460	       278.0 ns/op	     592 B/op	       4 allocs/op
+BenchmarkReverse/object/3        	  317061	       383.8 ns/op	    1216 B/op	       4 allocs/op
+BenchmarkReverse/array/64        	   40501	      2935 ns/op	   12592 B/op	       8 allocs/op
+BenchmarkReverse/object/64       	   22632	      5330 ns/op	   24672 B/op	       8 allocs/op
+BenchmarkReverse/array/1000      	    3082	     40318 ns/op	  190064 B/op	      12 allocs/op
+BenchmarkReverse/object/1000     	    1030	     99736 ns/op	  482848 B/op	      13 allocs/op
+BenchmarkReverse/array/2048      	    1238	     99627 ns/op	  496496 B/op	      14 allocs/op
+BenchmarkReverse/object/2048     	     426	    282705 ns/op	 1467936 B/op	      16 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/ad3n/gjson
+cpu: Apple M3 Pro
+BenchmarkLookup/Get/name         	 2770183	        60.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/name    	 1000000	       156.3 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/Get/escaped      	  961441	       166.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/escaped 	  664850	       215.2 ns/op	      48 B/op	       3 allocs/op
+BenchmarkLookup/Get/unicode      	  918660	       125.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/unicode 	  972086	       257.9 ns/op	       8 B/op	       1 allocs/op
+BenchmarkLookup/Get/single       	 1000000	       161.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/single  	  857193	       214.8 ns/op	       4 B/op	       1 allocs/op
+BenchmarkLookup/Get/long         	  347229	       433.2 ns/op	     112 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/long    	  381924	       306.6 ns/op	     336 B/op	       3 allocs/op
+BenchmarkLookup/Get/age          	  856173	       140.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/age     	  830377	       146.0 ns/op	       2 B/op	       1 allocs/op
+BenchmarkLookup/Get/missing      	  722510	       174.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/missing 	  619167	       214.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/true               	54055076	         2.256 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/TrUe               	58355114	         2.043 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/FALSE              	60808232	         2.004 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/invalid            	61253146	         1.994 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDecodeDensity/unicode   	   61747	      1888 ns/op	     896 B/op	       2 allocs/op
+BenchmarkDecodeDensity/invalid   	 1000000	       121.0 ns/op	     144 B/op	       1 allocs/op
+BenchmarkProjection/0            	 2426640	        48.85 ns/op	      16 B/op	       2 allocs/op
+BenchmarkProjection/3            	  430866	       310.0 ns/op	      48 B/op	       2 allocs/op
+BenchmarkProjection/64           	   19981	      5899 ns/op	    3680 B/op	      10 allocs/op
+BenchmarkProjection/1000         	    1508	    116663 ns/op	   66368 B/op	      24 allocs/op
+BenchmarkQuery/#(id>=1000).id    	    1992	     60597 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>1000).id     	    1994	     61259 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>=1000)#.id   	    2005	     55172 ns/op	      24 B/op	       3 allocs/op
+BenchmarkQuery/#(id>invalid).id  	  554157	       216.5 ns/op	      56 B/op	       2 allocs/op
+BenchmarkQuery/#(id<invalid).id  	    2100	     56549 ns/op	      56 B/op	       2 allocs/op
+BenchmarkIteration/Array         	  481354	       318.5 ns/op	     560 B/op	       3 allocs/op
+BenchmarkIteration/ForEach       	 1396707	        84.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIteration/Values        	 1324279	        91.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendReuse             	 3489559	        30.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this    	 4621093	        26.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this|v  	 2855341	        41.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/v.@this  	 1463262	        81.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@missing 	 3915766	        30.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReverse/array/0         	 1844175	        69.32 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/object/0        	 2085448	        57.97 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/array/3         	  416064	       312.6 ns/op	     592 B/op	       4 allocs/op
+BenchmarkReverse/object/3        	  265628	       475.1 ns/op	    1216 B/op	       4 allocs/op
+BenchmarkReverse/array/64        	   23370	      6006 ns/op	   12592 B/op	       8 allocs/op
+BenchmarkReverse/object/64       	   10000	     10013 ns/op	   24672 B/op	       8 allocs/op
+BenchmarkReverse/array/1000      	    2575	     65991 ns/op	  190064 B/op	      12 allocs/op
+BenchmarkReverse/object/1000     	    1117	     98368 ns/op	  482848 B/op	      13 allocs/op
+BenchmarkReverse/array/2048      	    1116	    109113 ns/op	  496496 B/op	      14 allocs/op
+BenchmarkReverse/object/2048     	     382	    299120 ns/op	 1467936 B/op	      16 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/ad3n/gjson
+cpu: Apple M3 Pro
+BenchmarkLookup/Get/name         	 5166808	        23.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/name    	 2628909	        52.53 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/Get/escaped      	 1382271	        85.12 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/escaped 	 1000000	       118.0 ns/op	      48 B/op	       3 allocs/op
+BenchmarkLookup/Get/unicode      	 1555045	        78.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/unicode 	 1000000	       112.4 ns/op	       8 B/op	       1 allocs/op
+BenchmarkLookup/Get/single       	 1611718	        73.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/single  	 1293561	        92.23 ns/op	       4 B/op	       1 allocs/op
+BenchmarkLookup/Get/long         	  588812	       242.8 ns/op	     112 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/long    	  449192	       319.9 ns/op	     336 B/op	       3 allocs/op
+BenchmarkLookup/Get/age          	  847905	       150.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/age     	  758313	       159.0 ns/op	       2 B/op	       1 allocs/op
+BenchmarkLookup/Get/missing      	  586545	       204.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/missing 	  559988	       216.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/true               	42997627	         2.720 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/TrUe               	46902481	         2.607 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/FALSE              	49983505	         2.384 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/invalid            	49549245	         2.240 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDecodeDensity/unicode   	   61550	      1954 ns/op	     896 B/op	       2 allocs/op
+BenchmarkDecodeDensity/invalid   	 1000000	       122.7 ns/op	     144 B/op	       1 allocs/op
+BenchmarkProjection/0            	 2175543	        53.27 ns/op	      16 B/op	       2 allocs/op
+BenchmarkProjection/3            	  397010	       333.3 ns/op	      48 B/op	       2 allocs/op
+BenchmarkProjection/64           	   19069	      6207 ns/op	    3680 B/op	      10 allocs/op
+BenchmarkProjection/1000         	    1310	     89291 ns/op	   66368 B/op	      24 allocs/op
+BenchmarkQuery/#(id>=1000).id    	    2085	     68729 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>1000).id     	    1945	     77027 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>=1000)#.id   	    1988	     58690 ns/op	      24 B/op	       3 allocs/op
+BenchmarkQuery/#(id>invalid).id  	  557988	       221.6 ns/op	      56 B/op	       2 allocs/op
+BenchmarkQuery/#(id<invalid).id  	    2032	     56076 ns/op	      56 B/op	       2 allocs/op
+BenchmarkIteration/Array         	  535634	       222.3 ns/op	     560 B/op	       3 allocs/op
+BenchmarkIteration/ForEach       	 1941018	        62.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIteration/Values        	 1592922	        76.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendReuse             	 4039819	        30.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this    	 3675349	        28.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this|v  	 2538676	        48.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/v.@this  	 1319834	        90.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@missing 	 3836086	        31.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReverse/array/0         	 1639861	        75.09 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/object/0        	 1827792	        69.03 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/array/3         	  337912	       452.9 ns/op	     592 B/op	       4 allocs/op
+BenchmarkReverse/object/3        	  162277	       654.9 ns/op	    1216 B/op	       4 allocs/op
+BenchmarkReverse/array/64        	   35302	      3505 ns/op	   12592 B/op	       8 allocs/op
+BenchmarkReverse/object/64       	   16828	      7194 ns/op	   24672 B/op	       8 allocs/op
+BenchmarkReverse/array/1000      	    2564	     54606 ns/op	  190064 B/op	      12 allocs/op
+BenchmarkReverse/object/1000     	    1029	    130049 ns/op	  482848 B/op	      13 allocs/op
+BenchmarkReverse/array/2048      	     979	    124515 ns/op	  496496 B/op	      14 allocs/op
+BenchmarkReverse/object/2048     	     382	    380147 ns/op	 1467936 B/op	      16 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/ad3n/gjson
+cpu: Apple M3 Pro
+BenchmarkLookup/Get/name         	 3167323	        56.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/name    	 1301306	        91.36 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/Get/escaped      	 1000000	       161.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/escaped 	  788760	       288.6 ns/op	      48 B/op	       3 allocs/op
+BenchmarkLookup/Get/unicode      	 1000000	       202.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/unicode 	  655174	       190.9 ns/op	       8 B/op	       1 allocs/op
+BenchmarkLookup/Get/single       	 1000000	       191.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/single  	 1000000	       115.8 ns/op	       4 B/op	       1 allocs/op
+BenchmarkLookup/Get/long         	  541953	       299.7 ns/op	     112 B/op	       1 allocs/op
+BenchmarkLookup/GetBytes/long    	  299731	       423.5 ns/op	     336 B/op	       3 allocs/op
+BenchmarkLookup/Get/age          	  521323	       214.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/age     	  595126	       277.2 ns/op	       2 B/op	       1 allocs/op
+BenchmarkLookup/Get/missing      	  578406	       307.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLookup/GetBytes/missing 	  449416	       249.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/true               	43023597	         3.150 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/TrUe               	44626254	         2.705 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/FALSE              	43153173	         2.784 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBool/invalid            	45681249	         2.590 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDecodeDensity/unicode   	   56383	      2210 ns/op	     896 B/op	       2 allocs/op
+BenchmarkDecodeDensity/invalid   	  997712	       143.1 ns/op	     144 B/op	       1 allocs/op
+BenchmarkProjection/0            	 1995921	        61.38 ns/op	      16 B/op	       2 allocs/op
+BenchmarkProjection/3            	  293828	       362.3 ns/op	      48 B/op	       2 allocs/op
+BenchmarkProjection/64           	   18223	      6557 ns/op	    3680 B/op	      10 allocs/op
+BenchmarkProjection/1000         	    1148	    103398 ns/op	   66368 B/op	      24 allocs/op
+BenchmarkQuery/#(id>=1000).id    	    2060	     64804 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>1000).id     	    1886	     63170 ns/op	       0 B/op	       0 allocs/op
+BenchmarkQuery/#(id>=1000)#.id   	    1884	     60485 ns/op	      24 B/op	       3 allocs/op
+BenchmarkQuery/#(id>invalid).id  	  474456	       225.7 ns/op	      56 B/op	       2 allocs/op
+BenchmarkQuery/#(id<invalid).id  	    1646	     65554 ns/op	      56 B/op	       2 allocs/op
+BenchmarkIteration/Array         	  425676	       281.8 ns/op	     560 B/op	       3 allocs/op
+BenchmarkIteration/ForEach       	 1867725	        63.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIteration/Values        	 1598497	        76.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAppendReuse             	 3773307	        48.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this    	 3546668	        32.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@this|v  	 2354096	        52.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/v.@this  	 1201874	       100.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkModifierLookup/@missing 	 3496159	        36.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkReverse/array/0         	 1330762	        87.45 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/object/0        	 1777149	        69.20 ns/op	       2 B/op	       1 allocs/op
+BenchmarkReverse/array/3         	  329138	       396.8 ns/op	     592 B/op	       4 allocs/op
+BenchmarkReverse/object/3        	  184548	       677.0 ns/op	    1216 B/op	       4 allocs/op
+BenchmarkReverse/array/64        	   23348	      4905 ns/op	   12592 B/op	       8 allocs/op
+BenchmarkReverse/object/64       	   13129	      9157 ns/op	   24672 B/op	       8 allocs/op
+BenchmarkReverse/array/1000      	    1612	     69680 ns/op	  190064 B/op	      12 allocs/op
+BenchmarkReverse/object/1000     	     664	    164913 ns/op	  482848 B/op	      13 allocs/op
+BenchmarkReverse/array/2048      	     632	    184385 ns/op	  496496 B/op	      14 allocs/op
+BenchmarkReverse/object/2048     	     249	    496800 ns/op	 1467936 B/op	      16 allocs/op
+PASS

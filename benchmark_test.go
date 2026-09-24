@@ -131,3 +131,30 @@ func BenchmarkAppendReuse(b *testing.B) {
 		benchmarkBytes = AppendJSONString(buf[:0], "hello\nworld")
 	}
 }
+
+func BenchmarkModifierLookup(b *testing.B) {
+	doc := `{"v":1}`
+	for _, path := range []string{"@this", "@this|v", "v.@this", "@missing"} {
+		b.Run(path, func(b *testing.B) {
+			b.ReportAllocs()
+			for b.Loop() {
+				benchmarkResult = Get(doc, path)
+			}
+		})
+	}
+}
+
+func BenchmarkReverse(b *testing.B) {
+	for _, size := range []int{0, 3, 64, 1000, 2048} {
+		array := "[" + strings.TrimSuffix(strings.Repeat(`{"v":123},`, size), ",") + "]"
+		object := "{" + strings.TrimSuffix(strings.Repeat(`"v":123,`, size), ",") + "}"
+		for _, tc := range []struct{ name, doc string }{{"array", array}, {"object", object}} {
+			b.Run(tc.name+"/"+strconv.Itoa(size), func(b *testing.B) {
+				b.ReportAllocs()
+				for b.Loop() {
+					benchmarkResult = Get(tc.doc, "@reverse")
+				}
+			})
+		}
+	}
+}

@@ -1,0 +1,129 @@
+diff --git a/gjson.go b/gjson.go
+index 17cd66b..8a14562 100644
+--- a/gjson.go
++++ b/gjson.go
+@@ -5,6 +5,8 @@ import (
+ 	"math"
+ 	"strconv"
+ 	"strings"
++	"sync"
++	"sync/atomic"
+ 	"time"
+ 	"unicode/utf16"
+ 	"unicode/utf8"
+@@ -991,7 +993,7 @@ func isDotPiperChar(s string) bool {
+ 			}
+ 		}
+ 
+-		_, ok := modifiers[s[1:i]]
++		_, ok := loadModifier(s[1:i])
+ 		return ok
+ 	}
+ 
+@@ -3038,7 +3040,7 @@ func execModifier(json, path string) (pathOut, res string, ok bool) {
+ 		}
+ 	}
+ 
+-	if fn, ok := modifiers[name]; ok {
++	if fn, ok := loadModifier(name); ok && fn != nil {
+ 		var args string
+ 		if hasArgs {
+ 			var parsedArgs bool
+@@ -3089,10 +3091,13 @@ func unwrap(json string) string {
+ 
+ var DisableModifiers = false
+ 
+-var modifiers map[string]func(json, arg string) string
++type modifierMap map[string]func(json, arg string) string
++
++var modifiers atomic.Pointer[modifierMap]
++var modifierMu sync.Mutex
+ 
+ func init() {
+-	modifiers = map[string]func(json, arg string) string{
++	builtins := modifierMap{
+ 		"pretty":  modPretty,
+ 		"ugly":    modUgly,
+ 		"reverse": modReverse,
+@@ -3107,17 +3112,33 @@ func init() {
+ 		"group":   modGroup,
+ 		"dig":     modDig,
+ 	}
++	modifiers.Store(&builtins)
+ }
+ 
+ func AddModifier(name string, fn func(json, arg string) string) {
+-	modifiers[name] = fn
++	modifierMu.Lock()
++	defer modifierMu.Unlock()
++
++	current := *modifiers.Load()
++	next := make(modifierMap, len(current)+1)
++	for key, value := range current {
++		next[key] = value
++	}
++
++	next[name] = fn
++	modifiers.Store(&next)
+ }
+ 
+ func ModifierExists(name string, fn func(json, arg string) string) bool {
+-	_, ok := modifiers[name]
++	_, ok := loadModifier(name)
+ 	return ok
+ }
+ 
++func loadModifier(name string) (func(string, string) string, bool) {
++	fn, ok := (*modifiers.Load())[name]
++	return fn, ok
++}
++
+ func cleanWS(s string) string {
+ 	for i := 0; i < len(s); i++ {
+ 		switch s[i] {
+@@ -3507,6 +3528,10 @@ func bytesString(b []byte) string {
+ }
+ 
+ func revSquash(json string) string {
++	if len(json) == 0 {
++		return ""
++	}
++
+ 	i := len(json) - 1
+ 	var depth int
+ 	if json[i] != '"' {
+@@ -3578,11 +3603,12 @@ func (t Result) Paths(json string) []string {
+ func (t Result) Path(json string) string {
+ 	var path []byte
+ 	var comps []string
+-	i := t.Index - 1
+-	if t.Index+len(t.Raw) > len(json) {
+-		goto fail
++	if t.Index < 0 || t.Index > len(json) || len(t.Raw) > len(json)-t.Index {
++		return ""
+ 	}
+ 
++	i := t.Index - 1
++
+ 	if !strings.HasPrefix(json[t.Index:], t.Raw) {
+ 		goto fail
+ 	}
+@@ -3601,10 +3627,18 @@ func (t Result) Path(json string) string {
+ 				break
+ 			}
+ 
++			if i < 0 {
++				goto fail
++			}
++
+ 			raw := revSquash(json[:i+1])
+ 			i = i - len(raw)
+ 			comps = append(comps, raw)
+ 
++			if i < 0 {
++				goto fail
++			}
++
+ 			raw = revSquash(json[:i+1])
+ 			i = i - len(raw)
+ 			i++

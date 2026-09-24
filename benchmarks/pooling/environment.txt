@@ -1,0 +1,9 @@
+go version go1.26.8 darwin/arm64
+baseline: 130841bf288cd4ac696af7674d3600aeecdc3105
+samples: 6
+benchtime: 100ms
+cpu: 1
+baseline directory: /private/tmp/gjson-pooling-before
+bb3ae7a4ebf9ed2abe4ce2ddadb80a82b8845e95d9104d0574e7e8f7ec217d93  /var/folders/4h/9t_qxft9123c9bz475z0nbqh0000gn/T//gjson-benchmark.sXTsWz/before/gjson.go
+8b829f591bd726abbca9a0c15d265148230653371a3ad5dca0f0c902dbf3e1ad  /Users/aden/Projects/gjson/gjson.go
+672ec2391b5a099cbe3c5b1643639de00c8ac2ebdfaabf8c5e0fda3642b5ba69  /Users/aden/Projects/gjson/benchmark_test.go

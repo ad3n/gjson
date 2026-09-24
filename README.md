@@ -493,3 +493,16 @@ widget.text.onMouseUp
 **
 
 *These benchmarks were run on a MacBook Pro M1 Max using Go 1.22 and can be found [here](https://github.com/tidwall/gjson-benchmarks).*
+
+## Concurrency and safety
+
+Modifier registration and lookup may run concurrently. Callbacks run without a
+registry lock and must synchronize their own shared state. Configure
+`DisableModifiers` and `DisableEscapeHTML` before concurrent use; direct writes
+to these public flags during reads require external synchronization.
+
+See [the safety audit](SAFETY_AUDIT.md) for validation, ownership rules, input-size
+constraints, and the remaining limits of the safety guarantees.
+
+The `@reverse` modifier reuses bounded temporary storage through `sync.Pool`.
+Returned strings keep independent storage. See [pooling measurements and limits](benchmarks/pooling/README.md).

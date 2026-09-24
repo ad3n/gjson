@@ -13,7 +13,11 @@ output=$(CDPATH= cd -- "$output" && pwd)
 export GOTOOLCHAIN=${GOTOOLCHAIN:-go1.26.8}
 
 for file in gjson.go go.mod go.sum; do
-    git -C "$root" show "$baseline:$file" > "$workspace/before/$file"
+    if [ -n "${BASELINE_DIR:-}" ]; then
+        cp "$BASELINE_DIR/$file" "$workspace/before/$file"
+    else
+        git -C "$root" show "$baseline:$file" > "$workspace/before/$file"
+    fi
     cp "$root/$file" "$workspace/after/$file"
 done
 
@@ -26,6 +30,8 @@ done
 {
     go version
     printf 'baseline: %s\nsamples: %s\nbenchtime: %s\ncpu: 1\n' "$baseline" "$count" "$duration"
+    printf 'baseline directory: %s\n' "${BASELINE_DIR:-git}"
+    shasum -a 256 "$workspace/before/gjson.go"
     shasum -a 256 "$root/gjson.go" "$root/benchmark_test.go"
 } > "$output/environment.txt"
 

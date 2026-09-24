@@ -1,0 +1,161 @@
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+                        │ benchmarks/pooling/before.txt │     benchmarks/pooling/after.txt      │
+                        │            sec/op             │     sec/op      vs base               │
+Lookup/Get/name                          37.90n ±   59%    25.41n ±  35%        ~ (p=0.180 n=6)
+Lookup/GetBytes/name                     71.57n ±  118%    53.88n ± 179%        ~ (p=0.310 n=6)
+Lookup/Get/escaped                      145.60n ±   44%    91.92n ± 123%        ~ (p=0.485 n=6)
+Lookup/GetBytes/escaped                  204.0n ±   47%    123.4n ±  15%        ~ (p=0.240 n=6)
+Lookup/Get/unicode                      152.25n ±   50%    83.10n ±  12%        ~ (p=0.180 n=6)
+Lookup/GetBytes/unicode                  197.7n ±   48%    110.8n ±  19%        ~ (p=0.093 n=6)
+Lookup/Get/single                       141.55n ±   73%    77.09n ±  30%        ~ (p=0.132 n=6)
+Lookup/GetBytes/single                   165.3n ±  120%    129.6n ± 102%        ~ (p=0.485 n=6)
+Lookup/Get/long                          335.8n ±  281%    328.6n ±  57%        ~ (p=1.000 n=6)
+Lookup/GetBytes/long                     379.4n ±   48%    320.8n ±  31%        ~ (p=0.132 n=6)
+Lookup/Get/age                           189.4n ±   89%    187.2n ±  61%        ~ (p=1.000 n=6)
+Lookup/GetBytes/age                      224.6n ±   54%    309.2n ± 127%        ~ (p=0.485 n=6)
+Lookup/Get/missing                       231.3n ±   71%    330.5n ± 230%        ~ (p=0.589 n=6)
+Lookup/GetBytes/missing                  222.8n ±   57%    325.0n ±  46%        ~ (p=0.589 n=6)
+Bool/true                                2.833n ±   30%    4.129n ± 496%        ~ (p=0.310 n=6)
+Bool/TrUe                                2.524n ±  303%    4.548n ± 405%        ~ (p=0.394 n=6)
+Bool/FALSE                               2.322n ±  684%    4.838n ± 122%        ~ (p=0.485 n=6)
+Bool/invalid                             2.312n ± 1001%    3.695n ± 364%        ~ (p=0.485 n=6)
+DecodeDensity/unicode                    2.097µ ±   88%    2.889µ ±  85%        ~ (p=0.310 n=6)
+DecodeDensity/invalid                    132.9n ±   93%    215.3n ±  58%        ~ (p=0.699 n=6)
+Projection/0                             57.33n ±  111%    65.46n ±  88%        ~ (p=0.818 n=6)
+Projection/3                             347.8n ±  216%    449.5n ± 143%        ~ (p=0.699 n=6)
+Projection/64                            6.382µ ±   85%    7.333µ ±  60%        ~ (p=0.937 n=6)
+Projection/1000                          99.17µ ±  588%   118.80µ ± 190%        ~ (p=0.818 n=6)
+Query/#(id>=1000).id                     62.70µ ±  702%    89.98µ ± 421%        ~ (p=0.818 n=6)
+Query/#(id>1000).id                      62.21µ ±  632%    67.13µ ± 441%        ~ (p=0.937 n=6)
+Query/#(id>=1000)#.id                    58.15µ ±  699%    81.29µ ± 346%        ~ (p=0.818 n=6)
+Query/#(id>invalid).id                   223.6n ±  263%    335.3n ±  64%        ~ (p=0.180 n=6)
+Query/#(id<invalid).id                   57.14µ ± 2672%    74.74µ ± 249%        ~ (p=0.485 n=6)
+Iteration/Array                          252.1n ±  522%    298.5n ± 115%        ~ (p=0.937 n=6)
+Iteration/ForEach                        63.03n ±  506%    89.44n ± 101%        ~ (p=0.699 n=6)
+Iteration/Values                         76.39n ±  415%   129.20n ± 111%        ~ (p=0.485 n=6)
+AppendReuse                              30.44n ±  426%    33.19n ± 132%        ~ (p=0.937 n=6)
+ModifierLookup/@this                     27.61n ±  499%    54.19n ±  87%        ~ (p=0.485 n=6)
+ModifierLookup/@this|v                   46.45n ±  443%    73.90n ± 556%        ~ (p=0.240 n=6)
+ModifierLookup/v.@this                   88.39n ±  269%   150.25n ± 210%        ~ (p=0.132 n=6)
+ModifierLookup/@missing                  31.32n ±  690%    49.58n ± 452%        ~ (p=0.180 n=6)
+Reverse/array/0                          73.23n ±  926%    80.35n ± 115%        ~ (p=0.937 n=6)
+Reverse/object/0                         66.18n ±  915%    61.90n ± 325%        ~ (p=0.699 n=6)
+Reverse/array/3                          358.6n ±  709%    360.0n ±  49%        ~ (p=0.589 n=6)
+Reverse/object/3                         565.9n ±  173%    495.4n ± 124%        ~ (p=0.589 n=6)
+Reverse/array/64                         4.324µ ±   39%    3.563µ ±  56%        ~ (p=0.310 n=6)
+Reverse/object/64                        7.462µ ±   34%    6.014µ ±  73%        ~ (p=0.699 n=6)
+Reverse/array/1000                       54.86µ ±   27%    47.59µ ± 190%        ~ (p=0.818 n=6)
+Reverse/object/1000                      118.2µ ±   40%    134.9µ ± 151%        ~ (p=0.485 n=6)
+Reverse/array/2048                       124.0µ ±   49%    203.3µ ±  55%        ~ (p=0.132 n=6)
+Reverse/object/2048                      356.9µ ±   39%    470.6µ ±  79%        ~ (p=0.310 n=6)
+geomean                                  432.0n            488.8n         +13.15%
+
+                        │ benchmarks/pooling/before.txt │       benchmarks/pooling/after.txt       │
+                        │             B/op              │     B/op      vs base                    │
+Lookup/Get/name                            0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/name                       16.00 ± 0%       16.00 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/escaped                         16.00 ± 0%       16.00 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/escaped                    48.00 ± 0%       48.00 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/unicode                         0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/unicode                    8.000 ± 0%       8.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/single                          0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/single                     4.000 ± 0%       4.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/long                            112.0 ± 0%       112.0 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/long                       336.0 ± 0%       336.0 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/age                             0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/age                        2.000 ± 0%       2.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/missing                         0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/missing                    0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/true                                  0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/TrUe                                  0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/FALSE                                 0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/invalid                               0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+DecodeDensity/unicode                      896.0 ± 0%       896.0 ± 0%         ~ (p=1.000 n=6) ¹
+DecodeDensity/invalid                      144.0 ± 0%       144.0 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/0                               16.00 ± 0%       16.00 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/3                               48.00 ± 0%       48.00 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/64                            3.594Ki ± 0%     3.594Ki ± 0%         ~ (p=1.000 n=6) ¹
+Projection/1000                          64.81Ki ± 0%     64.81Ki ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>=1000).id                       0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>1000).id                        0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>=1000)#.id                      24.00 ± 0%       24.00 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>invalid).id                     56.00 ± 0%       56.00 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id<invalid).id                     56.00 ± 0%       56.00 ± 0%         ~ (p=1.000 n=6) ¹
+Iteration/Array                            560.0 ± 0%       560.0 ± 0%         ~ (p=1.000 n=6) ¹
+Iteration/ForEach                          0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Iteration/Values                           0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+AppendReuse                                0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/@this                       0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/@this|v                     0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/v.@this                     0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/@missing                    0.000 ± 0%       0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Reverse/array/0                            2.000 ± 0%       0.000 ± 0%  -100.00% (p=0.002 n=6)
+Reverse/object/0                           2.000 ± 0%       0.000 ± 0%  -100.00% (p=0.002 n=6)
+Reverse/array/3                           592.00 ± 0%       32.00 ± 0%   -94.59% (p=0.002 n=6)
+Reverse/object/3                         1216.00 ± 0%       32.00 ± 0%   -97.37% (p=0.002 n=6)
+Reverse/array/64                         12592.0 ± 0%       704.0 ± 0%   -94.41% (p=0.002 n=6)
+Reverse/object/64                        24672.0 ± 0%       576.0 ± 0%   -97.67% (p=0.002 n=6)
+Reverse/array/1000                      185.61Ki ± 0%     10.04Ki ± 0%   -94.59% (p=0.002 n=6)
+Reverse/object/1000                      471.5Ki ± 0%     471.4Ki ± 0%    -0.04% (p=0.002 n=6)
+Reverse/array/2048                       484.9Ki ± 0%     484.9Ki ± 0%         ~ (p=1.000 n=6) ¹
+Reverse/object/2048                      1.400Mi ± 0%     1.400Mi ± 0%         ~ (p=1.000 n=6) ¹
+geomean                                               ²                 ?                      ² ³
+¹ all samples are equal
+² summaries must be >0 to compute geomean
+³ ratios must be >0 to compute geomean
+
+                        │ benchmarks/pooling/before.txt │      benchmarks/pooling/after.txt      │
+                        │           allocs/op           │ allocs/op   vs base                    │
+Lookup/Get/name                            0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/name                       1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/escaped                         1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/escaped                    3.000 ± 0%     3.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/unicode                         0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/unicode                    1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/single                          0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/single                     1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/long                            1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/long                       3.000 ± 0%     3.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/age                             0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/age                        1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/Get/missing                         0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Lookup/GetBytes/missing                    0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/true                                  0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/TrUe                                  0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/FALSE                                 0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Bool/invalid                               0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+DecodeDensity/unicode                      2.000 ± 0%     2.000 ± 0%         ~ (p=1.000 n=6) ¹
+DecodeDensity/invalid                      1.000 ± 0%     1.000 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/0                               2.000 ± 0%     2.000 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/3                               2.000 ± 0%     2.000 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/64                              10.00 ± 0%     10.00 ± 0%         ~ (p=1.000 n=6) ¹
+Projection/1000                            24.00 ± 0%     24.00 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>=1000).id                       0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>1000).id                        0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>=1000)#.id                      3.000 ± 0%     3.000 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id>invalid).id                     2.000 ± 0%     2.000 ± 0%         ~ (p=1.000 n=6) ¹
+Query/#(id<invalid).id                     2.000 ± 0%     2.000 ± 0%         ~ (p=1.000 n=6) ¹
+Iteration/Array                            3.000 ± 0%     3.000 ± 0%         ~ (p=1.000 n=6) ¹
+Iteration/ForEach                          0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Iteration/Values                           0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+AppendReuse                                0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/@this                       0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/@this|v                     0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/v.@this                     0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+ModifierLookup/@missing                    0.000 ± 0%     0.000 ± 0%         ~ (p=1.000 n=6) ¹
+Reverse/array/0                            1.000 ± 0%     0.000 ± 0%  -100.00% (p=0.002 n=6)
+Reverse/object/0                           1.000 ± 0%     0.000 ± 0%  -100.00% (p=0.002 n=6)
+Reverse/array/3                            4.000 ± 0%     1.000 ± 0%   -75.00% (p=0.002 n=6)
+Reverse/object/3                           4.000 ± 0%     1.000 ± 0%   -75.00% (p=0.002 n=6)
+Reverse/array/64                           8.000 ± 0%     1.000 ± 0%   -87.50% (p=0.002 n=6)
+Reverse/object/64                          8.000 ± 0%     1.000 ± 0%   -87.50% (p=0.002 n=6)
+Reverse/array/1000                        12.000 ± 0%     1.000 ± 0%   -91.67% (p=0.002 n=6)
+Reverse/object/1000                        13.00 ± 0%     13.00 ± 0%         ~ (p=1.000 n=6) ¹
+Reverse/array/2048                         14.00 ± 0%     14.00 ± 0%         ~ (p=1.000 n=6) ¹
+Reverse/object/2048                        16.00 ± 0%     16.00 ± 0%         ~ (p=1.000 n=6) ¹
+geomean                                               ²               ?                      ² ³
+¹ all samples are equal
+² summaries must be >0 to compute geomean
+³ ratios must be >0 to compute geomean
