@@ -5,7 +5,7 @@
   <img src=".github/images/logo-light.png" width="240" alt="GJSON" >
 </picture>
 <br>
-<a href="https://godoc.org/github.com/tidwall/gjson"><img src="https://img.shields.io/badge/api-reference-blue.svg?style=flat-square" alt="GoDoc"></a>
+<a href="https://pkg.go.dev/github.com/ad3n/gjson"><img src="https://img.shields.io/badge/api-reference-blue.svg?style=flat-square" alt="GoDoc"></a>
 <a href="https://tidwall.com/gjson-play"><img src="https://img.shields.io/badge/%F0%9F%8F%90-playground-9900cc.svg?style=flat-square" alt="GJSON Playground"></a>
 <a href="SYNTAX.md"><img src="https://img.shields.io/badge/{}-syntax-33aa33.svg?style=flat-square" alt="GJSON Syntax"></a>
 	
@@ -27,10 +27,10 @@ Getting Started
 
 ## Installing
 
-To start using GJSON, install Go and run `go get`:
+To start using GJSON, install Go 1.26 or later and run `go get`:
 
 ```sh
-$ go get -u github.com/tidwall/gjson
+$ go get -u github.com/ad3n/gjson
 ```
 
 This will retrieve the library.
@@ -41,7 +41,7 @@ Get searches json for the specified path. A path is in dot syntax, such as "name
 ```go
 package main
 
-import "github.com/tidwall/gjson"
+import "github.com/ad3n/gjson"
 
 const json = `{"name":{"first":"Janet","last":"Prichard"},"age":47}`
 
@@ -212,7 +212,7 @@ There are currently the following built-in modifiers:
 - `@values`: Returns an array of values for an object.
 - `@tostr`: Converts json to a string. Wraps a json string.
 - `@fromstr`: Converts a string from json. Unwraps a json string.
-- `@group`: Groups arrays of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
+- `@group`: Groups parallel arrays in an object into an array of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
 - `@dig`: Search for a value without providing its entire path. See [e8e87f2](https://github.com/tidwall/gjson/commit/e8e87f2a00dc41f3aba5631094e21f59a8cf8cbf).
 
 ### Modifier arguments
@@ -407,7 +407,7 @@ if !ok {
 
 ## Working with Bytes
 
-If your JSON is contained in a `[]byte` slice, there's the [GetBytes](https://godoc.org/github.com/tidwall/gjson#GetBytes) function. This is preferred over `Get(string(data), path)`.
+If your JSON is contained in a `[]byte` slice, there's the [GetBytes](https://pkg.go.dev/github.com/ad3n/gjson#GetBytes) function. This is preferred over `Get(string(data), path)`.
 
 ```go
 var json []byte = ...
@@ -430,6 +430,9 @@ if result.Index > 0 {
 This is a best-effort no allocation sub slice of the original json. This method utilizes the `result.Index` field, which is the position of the raw data in the original json. It's possible that the value of `result.Index` equals zero, in which case the `result.Raw` is converted to a `[]byte`.
 
 ## Performance
+
+See [the Go 1.26 optimization report](benchmarks/README.md) for a reproducible
+before/after comparison, allocation measurements, and compatibility checks.
 
 Benchmarks of GJSON alongside [encoding/json](https://golang.org/pkg/encoding/json/), 
 [ffjson](https://github.com/pquerna/ffjson), 

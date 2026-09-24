@@ -4,6 +4,8 @@ A GJSON Path is a text string syntax that describes a search pattern for quickly
 
 This document is designed to explain the structure of a GJSON Path through examples.
 
+The [syntax coverage audit](SYNTAX_COVERAGE.md) maps these features to executable tests.
+
 - [Path structure](#path-structure)
 - [Basic](#basic)
 - [Wildcards](#wildcards)
@@ -15,7 +17,7 @@ This document is designed to explain the structure of a GJSON Path through examp
 - [Multipaths](#multipaths)
 - [Literals](#literals)
 
-The definitive implementation is [github.com/tidwall/gjson](https://github.com/tidwall/gjson).  
+This fork is [github.com/ad3n/gjson](https://github.com/ad3n/gjson), based on [tidwall/gjson](https://github.com/tidwall/gjson).
 Use the [GJSON Playground](https://gjson.dev) to experiment with the syntax online.
 
 ## Path structure
@@ -55,7 +57,7 @@ age                    37
 children               ["Sara","Alex","Jack"]
 children.0             "Sara"
 children.1             "Alex"
-friends.1              {"first": "Roger", "last": "Craig", "age": 68}
+friends.1              {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]}
 friends.1.first        "Roger"
 ```
 
@@ -117,7 +119,7 @@ friends.#(first%"D*").last          "Murphy"
 friends.#(first!%"D*").last         "Craig"
 ```
 
-To query for a non-object value in an array, you can forgo the string to the right of the operator.
+To query for a non-object value in an array, you can omit the field path to the left of the operator.
 
 ```go
 children.#(!%"*a*")                 "Alex"
@@ -198,11 +200,11 @@ friends.0|first                     "Dale"
 friends|0|first                     "Dale"
 friends|#                           3
 friends.#                           3
-friends.#(last="Murphy")#           [{"first": "Dale", "last": "Murphy", "age": 44},{"first": "Jane", "last": "Murphy", "age": 47}]
+friends.#(last="Murphy")#           [{"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},{"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}]
 friends.#(last="Murphy")#.first     ["Dale","Jane"]
 friends.#(last="Murphy")#|first     <non-existent>
 friends.#(last="Murphy")#.0         []
-friends.#(last="Murphy")#|0         {"first": "Dale", "last": "Murphy", "age": 44}
+friends.#(last="Murphy")#|0         {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]}
 friends.#(last="Murphy")#.#         []
 friends.#(last="Murphy")#|#         2
 ```
@@ -212,7 +214,7 @@ Let's break down a few of these.
 The path `friends.#(last="Murphy")#` all by itself results in
 
 ```json
-[{"first": "Dale", "last": "Murphy", "age": 44},{"first": "Jane", "last": "Murphy", "age": 47}]
+[{"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},{"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}]
 ```
 
 The `.first` suffix will process the `first` path on each array element *before* returning the results. Which becomes
@@ -228,7 +230,7 @@ because `first` does not exist.
 Yet, `|0` suffix returns
 
 ```json
-{"first": "Dale", "last": "Murphy", "age": 44}
+{"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]}
 ```
 
 Because `0` is the first index of the previous result.
@@ -257,7 +259,7 @@ There are currently the following built-in modifiers:
 - `@values`: Returns an array of values for an object.
 - `@tostr`: Converts json to a string. Wraps a json string.
 - `@fromstr`: Converts a string from json. Unwraps a json string.
-- `@group`: Groups arrays of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
+- `@group`: Groups parallel arrays in an object into an array of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
 - `@dig`: Search for a value without providing its entire path. See [e8e87f2](https://github.com/tidwall/gjson/commit/e8e87f2a00dc41f3aba5631094e21f59a8cf8cbf).
 
 #### Modifier arguments
@@ -278,9 +280,9 @@ Which makes the json pretty and orders all of its keys.
   "children": ["Sara","Alex","Jack"],
   "fav.movie": "Deer Hunter",
   "friends": [
-    {"age": 44, "first": "Dale", "last": "Murphy"},
-    {"age": 68, "first": "Roger", "last": "Craig"},
-    {"age": 47, "first": "Jane", "last": "Murphy"}
+    {"age": 44, "first": "Dale", "last": "Murphy", "nets": ["ig", "fb", "tw"]},
+    {"age": 68, "first": "Roger", "last": "Craig", "nets": ["fb", "tw"]},
+    {"age": 47, "first": "Jane", "last": "Murphy", "nets": ["ig", "tw"]}
   ],
   "name": {"first": "Tom", "last": "Anderson"}
 }
@@ -306,8 +308,10 @@ gjson.AddModifier("case", func(json, arg string) string {
   return json
 })
 "children.@case:upper"             ["SARA","ALEX","JACK"]
-"children.@case:lower.@reverse"    ["jack","alex","sara"]
+"children.@case:lower|@reverse"    ["jack","alex","sara"]
 ```
+
+Use `|` to chain another path after an unquoted modifier argument; a dot is part of the argument.
 
 *Note: Custom modifiers are not yet available in the Rust version*
 
