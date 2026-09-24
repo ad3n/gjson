@@ -59,7 +59,18 @@ The parser implementation was not changed during this audit.
 
 ## Validation
 
-VALIDATION_PENDING
+- Go 1.26.8: all 308 syntax checks passed using the new public import path.
+- Full test suite with shuffled order and coverage passed: **96.1% of statements**.
+- `go vet ./...` and the full race suite passed on Go 1.26.8.
+- Full test suite passed on Go 1.27.1.
+- The same syntax suite passed against baseline commit
+  `8d89927eff414537088a6092d53fecf6711c1e75`; the differential suite also passed.
+- The dependency graph resolves this module as `github.com/ad3n/gjson` and does
+  not depend on `github.com/tidwall/gjson`.
+- `go fix -diff` has no pending changes. `git diff --check` passes.
+- `betteralign -apply` was reviewed and its public `Result` reorder was reverted.
+  The one remaining layout diagnostic is intentional to preserve public field
+  order and offsets. No production parser code changed.
 
 Statement coverage is distinct from feature coverage: **96.1%** does not mean all
 possible input combinations or branches have been proved correct. Every feature
@@ -82,4 +93,4 @@ Use `import "github.com/ad3n/gjson"` and `go get github.com/ad3n/gjson`.
 The module declaration, consumer-facing documentation, and differential harness
 use this path. Upstream commit/issue links, dependencies on `tidwall/match` and
 `tidwall/pretty`, licensing, and historical benchmark metadata retain their
-original identities. No git remote or published repository was changed.
+original identities. This audit does not change the git remote or publish the repository.
