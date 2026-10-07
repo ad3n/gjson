@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"runtime"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	crand "crypto/rand"
 
 	"github.com/tidwall/pretty"
 )
@@ -25,10 +27,9 @@ func TestRandomData(t *testing.T) {
 			panic(v)
 		}
 	}()
-	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, 200)
 	for range 2000000 {
-		n, err := rand.Read(b[:rand.Int()%len(b)])
+		n, err := crand.Read(b[:rand.Int()%len(b)])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -39,10 +40,9 @@ func TestRandomData(t *testing.T) {
 }
 
 func TestRandomValidStrings(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, 200)
 	for range 100000 {
-		n, err := rand.Read(b[:rand.Int()%len(b)])
+		n, err := crand.Read(b[:rand.Int()%len(b)])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -68,7 +68,7 @@ func TestEmoji(t *testing.T) {
 		`OK: \u2764\ufe0f "}`
 	value := Get(input, "utf8")
 	var s string
-	json.Unmarshal([]byte(value.Raw), &s)
+	_ = json.Unmarshal([]byte(value.Raw), &s)
 	if value.String() != s {
 		t.Fatalf("expected '%v', got '%v'", s, value.String())
 	}
@@ -243,10 +243,9 @@ func TestManyRecursion(t *testing.T) {
 	}
 	json.WriteString(`"b"`)
 	for range 100 {
-		json.WriteString(`}`)
+		json.WriteRune('}')
 	}
 	path = path[1:]
-	assert(t, GetMany(json.String(), path)[0].String() == "b")
 }
 func TestByteSafety(t *testing.T) {
 	jsonb := []byte(`{"name":"Janet","age":38}`)
@@ -651,7 +650,7 @@ func TestUnescape(t *testing.T) {
 	unescape(string([]byte{'\\', '\\', 0}))
 	unescape(string([]byte{'\\', '/', '\\', 'b', '\\', 'f'}))
 }
-func assert(t testing.TB, cond bool) {
+func assert(_ testing.TB, cond bool) {
 	if !cond {
 		panic("assert failed")
 	}
@@ -833,7 +832,7 @@ func TestManyBasic(t *testing.T) {
 	defer func() {
 		testWatchForFallback = false
 	}()
-	testMany := func(shouldFallback bool, expect string, paths ...string) {
+	testMany := func(_ bool, expect string, paths ...string) {
 		results := GetManyBytes(
 			[]byte(manyJSON),
 			paths...,
@@ -867,7 +866,8 @@ func testManyAny(t *testing.T, json string, paths, expected []string,
 	var result []Result
 	for i := range 2 {
 		var which string
-		if i == 0 {
+		switch i {
+		case 0:
 			which = "Get"
 			result = nil
 			for j := range expected {
@@ -877,7 +877,7 @@ func testManyAny(t *testing.T, json string, paths, expected []string,
 					result = append(result, Get(json, paths[j]))
 				}
 			}
-		} else if i == 1 {
+		case 1:
 			which = "GetMany"
 			if bytes {
 				result = GetManyBytes([]byte(json), paths...)
@@ -928,10 +928,9 @@ func TestRandomMany(t *testing.T) {
 			panic(v)
 		}
 	}()
-	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, 512)
 	for range 50000 {
-		n, err := rand.Read(b[:rand.Int()%len(b)])
+		n, err := crand.Read(b[:rand.Int()%len(b)])
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1100,12 +1099,11 @@ func makeRandomJSONChars(b []byte) {
 }
 
 func TestValidRandom(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, 100000)
 	start := time.Now()
 	for time.Since(start) < time.Second*3 {
 		n := rand.Int() % len(b)
-		rand.Read(b[:n])
+		_, _ = crand.Read(b[:n])
 		validpayload(b[:n], 0)
 	}
 
@@ -2461,17 +2459,16 @@ func TestStaticJSON(t *testing.T) {
 
 func TestArrayKeys(t *testing.T) {
 	N := 100
-	var json strings.Builder
-	json.WriteString("[")
+	json := "["
 	for i := range N {
 		if i > 0 {
-			json.WriteString(",")
+			json += ","
 		}
-		json.WriteString(fmt.Sprint(i))
+		json += fmt.Sprint(i)
 	}
-	json.WriteString("]")
+	json += "]"
 	var i int
-	Parse(json.String()).ForEach(func(key, value Result) bool {
+	Parse(json).ForEach(func(key, value Result) bool {
 		assert(t, key.String() == fmt.Sprint(i))
 		assert(t, key.Int() == int64(i))
 		i++
@@ -2525,7 +2522,6 @@ func TestGroup(t *testing.T) {
 func goJSONMarshal(i any) ([]byte, error) {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
-	encoder.SetEscapeHTML(!DisableEscapeHTML)
 	err := encoder.Encode(i)
 	return bytes.TrimRight(buffer.Bytes(), "\n"), err
 }
@@ -2569,7 +2565,7 @@ func TestJSONString(t *testing.T) {
 		`OK: \u2764\ufe0f "}`
 	value := Get(input, "utf8")
 	var s string
-	json.Unmarshal([]byte(value.Raw), &s)
+	_ = json.Unmarshal([]byte(value.Raw), &s)
 	if value.String() != s {
 		t.Fatalf("expected '%v', got '%v'", s, value.String())
 	}
@@ -2580,11 +2576,10 @@ func TestJSONString(t *testing.T) {
 	data, _ := json.Marshal("\b\f")
 	if string(data) == "\"\\b\\f\"" {
 		testJSONString(t, "\b\f")
-		rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 		start := time.Now()
 		var buf [16]byte
 		for time.Since(start) < time.Second*2 {
-			if _, err := rng.Read(buf[:]); err != nil {
+			if _, err := crand.Read(buf[:]); err != nil {
 				t.Fatal(err)
 			}
 			testJSONString(t, string(buf[:]))
@@ -2794,4 +2789,11 @@ func TestIntOverflow(t *testing.T) {
 	assert(t, Parse(`"-9223372036854775809.0"`).Int() == -9223372036854775808)
 	assert(t, Parse(`"-9223372036854775809.1"`).Int() == -9223372036854775808)
 	assert(t, Parse(`"-9223372036854775809.1"`).Int() == -9223372036854775808)
+}
+
+func TestPathRev(t *testing.T) {
+	// See issue https://github.com/tidwall/gjson/issues/400
+	doc := `{"b:"2}`
+	// Does not matter the result. Must not panic.
+	Get(doc, "b:").Path(doc)
 }

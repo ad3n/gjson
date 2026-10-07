@@ -3,6 +3,6 @@ module github.com/ad3n/gjson
 go 1.26.0
 
 require (
-	github.com/tidwall/match v1.1.1
-	github.com/tidwall/pretty v1.2.0
+	github.com/tidwall/match v1.2.0
+	github.com/tidwall/pretty v1.2.2
 )
