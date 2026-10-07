@@ -1,8 +1,16 @@
+// Copyright 2024 Joshua J Baker. All rights reserved.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+//
+// https://github.com/tidwall/gjson
+
+// Package gjson provides searching for json strings.
 package gjson
 
 import (
 	"iter"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -356,10 +364,10 @@ func (t Result) Get(path string) Result {
 }
 
 type arrayOrMapResult struct {
-	o  map[string]Result
-	oi map[string]any
 	a  []Result
 	ai []any
+	o  map[string]Result
+	oi map[string]any
 	vc byte
 }
 
@@ -696,6 +704,15 @@ func (t Result) Exists() bool {
 	return t.Type != Null || len(t.Raw) != 0
 }
 
+// Value returns one of these types:
+//
+//	bool, for JSON booleans
+//	float64, for JSON numbers
+//	Number, for JSON numbers
+//	string, for JSON string literals
+//	nil, for JSON null
+//	map[string]interface{}, for JSON objects
+//	[]interface{}, for JSON arrays
 func (t Result) Value() any {
 	if t.Type == String {
 		return t.Str
@@ -980,7 +997,7 @@ right:
 }
 
 func isDotPiperChar(s string) bool {
-	if DisableModifiers {
+	if modifiersAreDisabled {
 		return false
 	}
 
@@ -992,9 +1009,7 @@ func isDotPiperChar(s string) bool {
 				break
 			}
 		}
-
-		_, ok := loadModifier(s[1:i])
-		return ok
+		return getModifier(s[1:i]) != nil
 	}
 
 	return c == '[' || c == '{'
@@ -2059,7 +2074,8 @@ func parseSubSelectors(path string) (sels []subSelector, out string, ok bool) {
 		case '\\':
 			i++
 		case '@':
-			if modifier == 0 && i > 0 && (path[i-1] == '.' || path[i-1] == '|') {
+			if modifier == 0 && i > 0 && (path[i-1] == '.' ||
+				path[i-1] == '|') {
 				modifier = i
 			}
 		case ':':
@@ -2139,7 +2155,22 @@ func appendHex16(dst []byte, x uint16) []byte {
 	)
 }
 
+// Deprecated: This flag does nothing. Use SetEscapeHTML() instead.
 var DisableEscapeHTML = false
+
+var disableEscapeHTML atomic.Bool
+
+// SetEscapeHTML to enable/disable the automatic escaping of certain
+// "problamatic" HTML characters when encoding to JSON.
+// These character include '>', '<' and '&', which get escaped to \u003e,
+// \u0026, and \u003c respectively.
+func SetEscapeHTML(escapeHTML bool) {
+	disableEscapeHTML.Store(!escapeHTML)
+}
+
+func escapeHTML() bool {
+	return !disableEscapeHTML.Load()
+}
 
 func AppendJSONString(dst []byte, s string) []byte {
 	dst = append(dst, make([]byte, len(s)+2)...)
@@ -2162,10 +2193,13 @@ func AppendJSONString(dst []byte, s string) []byte {
 				dst = append(dst, 'u')
 				dst = appendHex16(dst, uint16(s[i]))
 			}
-		} else if !DisableEscapeHTML &&
-			(s[i] == '>' || s[i] == '<' || s[i] == '&') {
-			dst = append(dst, '\\', 'u')
-			dst = appendHex16(dst, uint16(s[i]))
+		} else if s[i] == '>' || s[i] == '<' || s[i] == '&' {
+			if escapeHTML() {
+				dst = append(dst, '\\', 'u')
+				dst = appendHex16(dst, uint16(s[i]))
+			} else {
+				dst = append(dst, s[i])
+			}
 		} else if s[i] == '\\' {
 			dst = append(dst, '\\', '\\')
 		} else if s[i] == '"' {
@@ -2205,14 +2239,15 @@ type parseContext struct {
 
 func Get(json, path string) Result {
 	if len(path) > 1 {
-		if (path[0] == '@' && !DisableModifiers) || path[0] == '!' {
+		if (path[0] == '@' && !modifiersAreDisabled) || path[0] == '!' {
+			// possible modifier
 			var ok bool
 			var npath string
 			var rjson string
-			if path[0] == '@' && !DisableModifiers {
+			if path[0] == '@' && !modifiersAreDisabled {
 				npath, rjson, ok = execModifier(json, path)
 			} else if path[0] == '!' {
-				npath, rjson, ok = execStatic(json, path)
+				npath, rjson, ok = execStatic(path)
 			}
 
 			if ok {
@@ -2755,6 +2790,12 @@ func validarray(data []byte, i int) (outi int, ok bool) {
 
 	return i, false
 }
+
+func ishex(c byte) bool {
+	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') ||
+		(c >= 'A' && c <= 'F')
+}
+
 func validstring(data []byte, i int) (outi int, ok bool) {
 	for ; i < len(data); i++ {
 		if data[i] < ' ' {
@@ -2774,13 +2815,7 @@ func validstring(data []byte, i int) (outi int, ok bool) {
 			case 'u':
 				for range 4 {
 					i++
-					if i >= len(data) {
-						return i, false
-					}
-
-					if !((data[i] >= '0' && data[i] <= '9') ||
-						(data[i] >= 'a' && data[i] <= 'f') ||
-						(data[i] >= 'A' && data[i] <= 'F')) {
+					if i >= len(data) || !ishex(data[i]) {
 						return i, false
 					}
 				}
@@ -2982,7 +3017,9 @@ func safeInt(f float64) (n int64, ok bool) {
 	return int64(f), true
 }
 
-func execStatic(json, path string) (pathOut, res string, ok bool) {
+// execStatic parses the path to find a static value.
+// The input expects that the path already starts with a '!'
+func execStatic(path string) (pathOut, res string, ok bool) {
 	name := path[1:]
 	if len(name) > 0 {
 		switch name[0] {
@@ -3039,8 +3076,7 @@ func execModifier(json, path string) (pathOut, res string, ok bool) {
 			break
 		}
 	}
-
-	if fn, ok := loadModifier(name); ok && fn != nil {
+	if fn := getModifier(name); fn != nil {
 		var args string
 		if hasArgs {
 			var parsedArgs bool
@@ -3089,7 +3125,17 @@ func unwrap(json string) string {
 	return json
 }
 
+// Deprecated: Modifiers can no longer be disabled at runtime. To disable
+// modifiers use the build flag:
+//
+//	-ldflags="-X 'github.com/tidwall/gjson.disableModifiers=true'"
 var DisableModifiers = false
+var disableModifiers = "false"                        // ldflag ("true")
+var modifiersAreDisabled = disableModifiers == "true" // usable feature bool
+
+var stockModifiers map[string]func(json, arg string) string
+var userModifiers map[string]func(json, arg string) string
+var userModifiersLock sync.RWMutex
 
 type modifierMap map[string]func(json, arg string) string
 
@@ -3097,7 +3143,7 @@ var modifiers atomic.Pointer[modifierMap]
 var modifierMu sync.Mutex
 
 func init() {
-	builtins := modifierMap{
+	stockModifiers = map[string]func(json, arg string) string{
 		"pretty":  modPretty,
 		"ugly":    modUgly,
 		"reverse": modReverse,
@@ -3112,26 +3158,44 @@ func init() {
 		"group":   modGroup,
 		"dig":     modDig,
 	}
-	modifiers.Store(&builtins)
+	userModifiers = map[string]func(json, arg string) string{}
 }
 
+// AddModifier binds a custom modifier command to the GJSON syntax.
+// Provide the name of the modifier without the '@' prefix.
+// The default modifiers, such as 'pretty/this/valid', cannot be
+// overwritten; attempts will simply be ignored.
 func AddModifier(name string, fn func(json, arg string) string) {
-	modifierMu.Lock()
-	defer modifierMu.Unlock()
-
-	current := *modifiers.Load()
-	next := make(modifierMap, len(current)+1)
-	for key, value := range current {
-		next[key] = value
+	if stockModifiers[name] != nil {
+		// User wants to overwrite stock modifier. Ignore request
+	} else {
+		userModifiersLock.Lock()
+		userModifiers[name] = fn
+		userModifiersLock.Unlock()
 	}
+}
 
-	next[name] = fn
-	modifiers.Store(&next)
+// getUserModifier return a user-defined modifier.
+// It's noinline to ensure that the caller 'getModifier' remains inline.
+//
+//go:noinline
+func getUserModifier(name string) func(json, arg string) string {
+	userModifiersLock.RLock()
+	fn := userModifiers[name]
+	userModifiersLock.RUnlock()
+	return fn
+}
+
+func getModifier(name string) func(json, arg string) string {
+	fn := stockModifiers[name]
+	if fn == nil {
+		fn = getUserModifier(name)
+	}
+	return fn
 }
 
 func ModifierExists(name string, fn func(json, arg string) string) bool {
-	_, ok := loadModifier(name)
-	return ok
+	return getModifier(name) != nil
 }
 
 func loadModifier(name string) (func(string, string) string, bool) {
@@ -3576,10 +3640,14 @@ func bytesString(b []byte) string {
 }
 
 func revSquash(json string) string {
+	// reverse squash
+	// expects that the tail character is a ']' or '}' or ')' or '"'
+	// squash the value, ignoring all nested arrays and objects.
 	if len(json) == 0 {
-		return ""
+		// Nothing to squash. Path can walk past the start of the document on
+		// malformed JSON (#400); guard against json[len(json)-1] panicking.
+		return json
 	}
-
 	i := len(json) - 1
 	var depth int
 	if json[i] != '"' {
@@ -3718,15 +3786,14 @@ func (t Result) Path(json string) string {
 	}
 
 	if len(comps) == 0 {
-		if DisableModifiers {
+		if modifiersAreDisabled {
 			goto fail
 		}
 
 		return "@this"
 	}
-
-	for i := len(comps) - 1; i >= 0; i-- {
-		rcomp := Parse(comps[i])
+	for _, comp := range slices.Backward(comps) {
+		rcomp := Parse(comp)
 		if !rcomp.Exists() {
 			goto fail
 		}
