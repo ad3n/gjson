@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -1322,24 +1323,15 @@ func TestDuplicateKeys(t *testing.T) {
 }
 
 func TestArrayValues(t *testing.T) {
-	var json = `{"array": ["PERSON1","PERSON2",0],}`
-	values := Get(json, "array").Array()
-	var output strings.Builder
-	for i, val := range values {
-		if i > 0 {
-			output.WriteString("\n")
-		}
-		output.WriteString(fmt.Sprintf("%#v", val))
+	values := Get(`{"array": ["PERSON1","PERSON2",0],}`, "array").Array()
+	want := []Result{
+		{Type: String, Raw: `"PERSON1"`, Str: "PERSON1", Index: 11},
+		{Type: String, Raw: `"PERSON2"`, Str: "PERSON2", Index: 21},
+		{Type: Number, Raw: "0", Index: 31},
 	}
-	expect := strings.Join([]string{
-		`gjson.Result{Type:3, Raw:"\"PERSON1\"", Str:"PERSON1", Num:0, ` +
-			`Index:11, Indexes:[]int(nil)}`,
-		`gjson.Result{Type:3, Raw:"\"PERSON2\"", Str:"PERSON2", Num:0, ` +
-			`Index:21, Indexes:[]int(nil)}`,
-		`gjson.Result{Type:2, Raw:"0", Str:"", Num:0, Index:31, Indexes:[]int(nil)}`,
-	}, "\n")
-	if output.String() != expect {
-		t.Fatalf("expected '%v', got '%v'", expect, output.String())
+
+	if !reflect.DeepEqual(values, want) {
+		t.Fatalf("expected %#v, got %#v", want, values)
 	}
 }
 

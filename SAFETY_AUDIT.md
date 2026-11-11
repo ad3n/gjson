@@ -70,3 +70,44 @@ No internal resource/goroutine leak was identified by inspection, and no race or
 unexpected panic was observed in the tests above. There was no long-duration heap
 soak or proof of behavior for unlimited inputs. Benchmark results are stored in
 [benchmarks/safety](benchmarks/safety/README.md).
+
+## Performance follow-up (2026-11-11)
+
+The local working tree already contained reordered `Result` and
+`arrayOrMapResult` fields before this follow-up. Those edits are preserved;
+`TestArrayValues` now compares field values instead of Go's formatted field order.
+
+- `@join` reuses private scratch maps/slices for inputs up to 16 KiB. A released
+  scratch object retains at most 256 keys; larger maps/slices are dropped.
+  Reusable maps and slices are cleared before returning them to `sync.Pool`.
+  This bounds each retained scratch object, not the total size of the pool.
+- Joined output is allocated independently, sized from the final keys and values.
+  Returned strings never alias pooled storage. Duplicate keys preserve the first
+  key spelling/order and the last value, including escaped equivalent keys.
+- Empty collection fast paths avoid allocation. Escape-prefixed strings of
+  33–1024 bytes use a temporary stack buffer and copy the decoded result into
+  owned storage. Small-string and large-input paths remain available.
+- No new unsafe conversions or public API declarations were introduced.
+
+Five 100 ms benchmark samples on the same host, run sequentially against the
+pre-change snapshot and the updated tree, produced these median measurements:
+
+| Workload | ns/op before → after | B/op before → after | allocs/op before → after |
+| --- | ---: | ---: | ---: |
+| Join 3 keys | 411.8 → 302.9 | 616 → 32 | 6 → 1 |
+| Join 64 keys | 9256 → 5174 | 39024 → 642 | 24 → 1 |
+| Join empty array | 61.98 → 28.49 | 8 → 0 | 1 → 0 |
+| Decode 128 Unicode escapes | 1667 → 1612 | 896 → 128 | 2 → 1 |
+| Invalid escape-prefixed string | 88.21 → 71.85 | 144 → 0 | 1 → 0 |
+
+Pool benchmarks describe steady-state reuse. A cold pool or a GC that discards
+pool entries can require additional allocations. Nonempty output still requires
+owned memory; zero allocation is not claimed for every API or input.
+
+Validation includes the full suite, race detector, vet, betteralign, strict
+`checkptr=2` (excluding allocation-count assertions), pool cleanup/size limits,
+retained-output and byte-input ownership, parallel joins, duplicate/escaped keys,
+and decoder size boundaries. A temporary differential fuzz harness compared
+`@join`, preserve mode, `@flatten`, `@keys`, `@values`, and `@this` against the
+pre-change snapshot for 1,019,997 executions, with no observed mismatch. Fuzz input
+was limited to 4 KiB; this is not proof of safety for unlimited resource usage.

@@ -55,12 +55,12 @@ func (t Type) String() string {
 }
 
 type Result struct {
-	Type    Type
 	Raw     string
 	Str     string
+	Indexes []int
+	Type    Type
 	Num     float64
 	Index   int
-	Indexes []int
 }
 
 func (t Result) String() string {
@@ -364,10 +364,10 @@ func (t Result) Get(path string) Result {
 }
 
 type arrayOrMapResult struct {
-	a  []Result
-	ai []any
 	o  map[string]Result
 	oi map[string]any
+	a  []Result
+	ai []any
 	vc byte
 }
 
@@ -2398,6 +2398,10 @@ func unescape(json string) string {
 		return string(appendUnescaped(buf[:0], json))
 	}
 
+	if len(json) <= 1024 && json[0] == '\\' {
+		return unescapeBuffered(json)
+	}
+
 	str := appendUnescaped(make([]byte, 0, len(json)), json)
 
 	if len(str) <= 1 || len(str) < len(json)/2 {
@@ -2405,6 +2409,11 @@ func unescape(json string) string {
 	}
 
 	return bytesString(str)
+}
+
+func unescapeBuffered(json string) string {
+	var buf [1024]byte
+	return string(appendUnescaped(buf[:0], json))
 }
 
 func appendUnescaped(str []byte, json string) []byte {
@@ -3368,6 +3377,10 @@ func modFlatten(json, arg string) string {
 		return json
 	}
 
+	if res.Raw == "[]" {
+		return "[]"
+	}
+
 	var deep bool
 	if arg != "" {
 		Parse(arg).ForEach(func(key, value Result) bool {
@@ -3413,7 +3426,7 @@ func modFlatten(json, arg string) string {
 
 func modKeys(json, arg string) string {
 	v := Parse(json)
-	if !v.Exists() {
+	if !v.Exists() || v.Raw == "{}" || v.Raw == "[]" {
 		return "[]"
 	}
 
@@ -3441,7 +3454,7 @@ func modKeys(json, arg string) string {
 
 func modValues(json, arg string) string {
 	v := Parse(json)
-	if !v.Exists() {
+	if !v.Exists() || v.Raw == "{}" {
 		return "[]"
 	}
 
@@ -3471,6 +3484,10 @@ func modJoin(json, arg string) string {
 		return json
 	}
 
+	if res.Raw == "[]" {
+		return "{}"
+	}
+
 	var preserve bool
 	if arg != "" {
 		Parse(arg).ForEach(func(key, value Result) bool {
@@ -3482,9 +3499,9 @@ func modJoin(json, arg string) string {
 		})
 	}
 
-	var out []byte
-	out = append(out, '{')
 	if preserve {
+		var out []byte
+		out = append(out, '{')
 		var idx int
 		res.ForEach(func(_, value Result) bool {
 			if !value.IsObject() {
@@ -3503,8 +3520,12 @@ func modJoin(json, arg string) string {
 		return bytesString(out)
 	}
 
-	var keys []Result
-	kvals := make(map[string]Result)
+	buffer := acquireJoinBuffer(len(json))
+	if len(json) <= joinPoolMaxInput {
+		defer releaseJoinBuffer(buffer)
+	}
+
+	outputSize := 1
 	res.ForEach(func(_, value Result) bool {
 		if !value.IsObject() {
 			return true
@@ -3512,23 +3533,32 @@ func modJoin(json, arg string) string {
 
 		value.ForEach(func(key, value Result) bool {
 			k := key.String()
-			if _, ok := kvals[k]; !ok {
-				keys = append(keys, key)
+			previous, ok := buffer.values[k]
+			if !ok {
+				buffer.keys = append(buffer.keys, key)
+				outputSize += len(key.Raw) + 2
 			}
 
-			kvals[k] = value
+			outputSize += len(value.Raw) - len(previous.Raw)
+			buffer.values[k] = value
 			return true
 		})
 		return true
 	})
-	for i := range keys {
+	if len(buffer.keys) == 0 {
+		return "{}"
+	}
+
+	out := make([]byte, 1, outputSize)
+	out[0] = '{'
+	for i := range buffer.keys {
 		if i > 0 {
 			out = append(out, ',')
 		}
 
-		out = append(out, keys[i].Raw...)
+		out = append(out, buffer.keys[i].Raw...)
 		out = append(out, ':')
-		out = append(out, kvals[keys[i].String()].Raw...)
+		out = append(out, buffer.values[buffer.keys[i].String()].Raw...)
 	}
 
 	out = append(out, '}')
