@@ -2452,10 +2452,14 @@ func appendUnescaped(str []byte, json string) []byte {
 			r := runeit(json[i+1:])
 			i += 5
 
-			if utf16.IsSurrogate(r) && len(json[i:]) >= 6 &&
+			if r >= 0xD800 && r < 0xDC00 && len(json[i:]) >= 6 &&
 				json[i] == '\\' && json[i+1] == 'u' {
-				r = utf16.DecodeRune(r, runeit(json[i+2:]))
-				i += 6
+				r2 := runeit(json[i+2:])
+
+				if r2 >= 0xDC00 && r2 < 0xE000 {
+					r = utf16.DecodeRune(r, r2)
+					i += 6
+				}
 			}
 
 			str = utf8.AppendRune(str, r)
@@ -3195,7 +3199,15 @@ func getModifier(name string) func(json, arg string) string {
 }
 
 func ModifierExists(name string, fn func(json, arg string) string) bool {
-	return getModifier(name) != nil
+	if stockModifiers[name] != nil {
+		return true
+	}
+
+	userModifiersLock.RLock()
+	_, ok := userModifiers[name]
+	userModifiersLock.RUnlock()
+
+	return ok
 }
 
 func loadModifier(name string) (func(string, string) string, bool) {

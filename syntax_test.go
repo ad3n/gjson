@@ -329,10 +329,10 @@ func TestSyntaxBuiltInModifiers(t *testing.T) {
 
 func TestSyntaxPrettyOptions(t *testing.T) {
 	for _, tc := range []struct{ name, path, want string }{
-		{"default", `@pretty`, "{\n  \"b\": [1, 2],\n  \"a\": 3\n}"},
-		{"sortKeys", `@pretty:{"sortKeys":true}`, "{\n  \"a\": 3,\n  \"b\": [1, 2]\n}"},
-		{"indent", `@pretty:{"indent":"\t"}`, "{\n\t\"b\": [1, 2],\n\t\"a\": 3\n}"},
-		{"prefix", `@pretty:{"prefix":"\t"}`, "{\n\t  \"b\": [1, 2],\n\t  \"a\": 3\n\t}"},
+		{"default", `@pretty`, `{ "b": [1, 2], "a": 3 }`},
+		{"sortKeys", `@pretty:{"sortKeys":true}`, `{ "a": 3, "b": [1, 2] }`},
+		{"indent", `@pretty:{"indent":"\t","width":0}`, "{\n\t\"b\": [\n\t\t1,\n\t\t2\n\t],\n\t\"a\": 3\n}"},
+		{"prefix", `@pretty:{"prefix":"\t","width":0}`, "{\n\t  \"b\": [\n\t    1,\n\t    2\n\t  ],\n\t  \"a\": 3\n\t}"},
 		{"width", `@pretty:{"width":0}`, "{\n  \"b\": [\n    1,\n    2\n  ],\n  \"a\": 3\n}"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
