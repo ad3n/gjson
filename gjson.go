@@ -742,7 +742,13 @@ func (t Result) Value() any {
 
 func parseString(json string, i int) (int, string, bool, bool) {
 	var s = i
-	for ; i < len(json); i++ {
+	limit := len(json)
+	if stringScanSIMD && limit-i >= 64 {
+		limit = i + 16
+	}
+
+scan:
+	for ; i < limit; i++ {
 		if json[i] > '\\' {
 			continue
 		}
@@ -753,6 +759,14 @@ func parseString(json string, i int) (int, string, bool, bool) {
 
 		if json[i] == '\\' {
 			i++
+			if i == s+1 && i+1 < len(json) && json[s-1] == '"' && json[i+1] == '"' {
+				return i + 2, json[s-1 : i+2], true, true
+			}
+
+			if stringScanSIMD && len(json)-i >= 64 && json[i] > '\\' {
+				return parseStringEscaped(json, s, i)
+			}
+
 			for ; i < len(json); i++ {
 				if json[i] > '\\' {
 					continue
@@ -770,6 +784,10 @@ func parseString(json string, i int) (int, string, bool, bool) {
 						}
 
 						if n%2 == 0 {
+							if stringScanSIMD {
+								return parseStringEscapedScalar(json, s, i+1)
+							}
+
 							continue
 						}
 					}
@@ -779,6 +797,70 @@ func parseString(json string, i int) (int, string, bool, bool) {
 			}
 
 			break
+		}
+	}
+
+	if i < len(json) {
+		i += indexStringSpecial(json[i:])
+		limit = len(json)
+		goto scan
+	}
+
+	return i, json[s-1:], false, false
+}
+
+func parseStringEscaped(json string, s, i int) (int, string, bool, bool) {
+	for ; i < len(json); i++ {
+		if json[i] > '\\' {
+			if !stringScanSIMD || len(json)-i < 64 {
+				continue
+			}
+
+			end := i + min(len(json)-i, stringScanBlockSize)
+			next := strings.IndexByte(json[i:end], '"')
+			if next < 0 {
+				i = end - 1
+				continue
+			}
+
+			i += next
+		}
+
+		if json[i] == '"' {
+			if json[i-1] == '\\' {
+				n := 0
+				for j := i - 2; j > 0; j-- {
+					if json[j] != '\\' {
+						break
+					}
+
+					n++
+				}
+
+				if n%2 == 0 {
+					return parseStringEscapedScalar(json, s, i+1)
+				}
+			}
+
+			return i + 1, json[s-1 : i+1], true, true
+		}
+	}
+
+	return i, json[s-1:], false, false
+}
+
+func parseStringEscapedScalar(json string, s, i int) (int, string, bool, bool) {
+	for ; i < len(json); i++ {
+		if json[i] > '\\' {
+			continue
+		}
+
+		if json[i] == '"' {
+			return i + 1, json[s-1 : i+1], true, true
+		}
+
+		if json[i] == '\\' && i+1 < len(json) {
+			i++
 		}
 	}
 

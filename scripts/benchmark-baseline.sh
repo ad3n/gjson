@@ -21,6 +21,14 @@ for file in gjson.go go.mod go.sum; do
     cp "$root/$file" "$workspace/after/$file"
 done
 
+for file in "$root"/*.go "$root"/*.s; do
+    [ -f "$file" ] || continue
+    case "$file" in
+        *_test.go) continue ;;
+    esac
+    cp "$file" "$workspace/after/"
+done
+
 for version in before after; do
     cp "$root/benchmark_test.go" "$workspace/$version/benchmark_test.go"
     (cd "$workspace/$version" && go test -c -o "$workspace/$version.test")

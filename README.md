@@ -35,6 +35,10 @@ $ go get -u github.com/ad3n/gjson
 
 This will retrieve the library.
 
+String scanning uses SSE2 on AMD64 and NEON on ARM64 automatically. Other
+architectures use a Go implementation. Build with `-tags=purego` to disable
+GJSON's assembly scanner, for example `go test -tags=purego ./...`.
+
 ## Get a value
 Get searches json for the specified path. A path is in dot syntax, such as "name.last" or "age". When the value is found it's returned immediately. 
 
