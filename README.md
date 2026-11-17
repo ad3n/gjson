@@ -501,9 +501,11 @@ widget.text.onMouseUp
 ## Concurrency and safety
 
 Modifier registration and lookup may run concurrently. Callbacks run without a
-registry lock and must synchronize their own shared state. Configure
-`DisableModifiers` and `DisableEscapeHTML` before concurrent use; direct writes
-to these public flags during reads require external synchronization.
+registry lock and must synchronize their own shared state. Use the concurrency-safe
+`SetEscapeHTML(false)` to disable HTML escaping. To disable modifiers at build
+time, use `-ldflags="-X github.com/ad3n/gjson.disableModifiers=true"`.
+The obsolete no-op flags `DisableModifiers` and `DisableEscapeHTML` have been
+removed; callers still referencing them must migrate to these controls.
 
 See [the safety audit](SAFETY_AUDIT.md) for validation, ownership rules, input-size
 constraints, and the remaining limits of the safety guarantees.

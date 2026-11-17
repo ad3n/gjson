@@ -8,9 +8,9 @@ absence of every possible panic, race, leak, or workload bottleneck.
 ## Fixed
 
 - Concurrent `AddModifier`, modifier lookup, and `ModifierExists` previously
-  accessed an unsynchronized map. Writers now publish immutable snapshots through
-  an atomic pointer; a writer mutex prevents lost updates. Readers take no mutex.
-- Callbacks execute outside the writer mutex. A regression test registers and
+  accessed an unsynchronized map. User modifiers now use an RWMutex; stock
+  modifiers use an immutable map. Obsolete atomic snapshot helpers were removed.
+- Callbacks execute outside the registry lock. A regression test registers and
   invokes a second modifier from inside a callback to check reentrancy.
 - A registered nil modifier is no longer invoked. Its name remains registered
   (`ModifierExists` returns true), while execution follows the unknown-modifier
@@ -19,8 +19,9 @@ absence of every possible panic, race, leak, or workload bottleneck.
   slicing. Truncated object-key scans return an empty path. Empty reverse scans
   are guarded. Regression cases cover these previously unsafe inputs.
 
-Public declarations and the Result field layout are preserved. Defined valid
-input behavior remains compatible; the panic cases above are deliberate fixes.
+The Result field layout is preserved. The obsolete no-op public flags were
+removed as described below. Defined valid input behavior remains compatible;
+the panic cases above are deliberate fixes.
 
 ## Validation
 
@@ -41,10 +42,10 @@ input behavior remains compatible; the panic cases above are deliberate fixes.
 
 ## Usage constraints and remaining risks
 
-- Set `DisableModifiers` and `DisableEscapeHTML` before concurrent use, or provide
-  application-level synchronization covering every reader and writer. They remain
-  public bool variables for compatibility; arbitrary concurrent assignment cannot
-  be made safe internally without changing that API.
+- The obsolete no-op flags `DisableModifiers` and `DisableEscapeHTML` were removed.
+  Use `SetEscapeHTML`, backed by an atomic boolean, for runtime HTML escaping
+  configuration. Disable modifiers at build time with
+  `-ldflags="-X github.com/ad3n/gjson.disableModifiers=true"`.
 - Custom modifiers and iterator callbacks must provide their own synchronization.
   A callback can panic, block, recurse indefinitely, or retain data. Nil iterator
   callbacks remain invalid; panics from user callbacks are not swallowed.

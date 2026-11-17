@@ -4,7 +4,6 @@
 //
 // https://github.com/tidwall/gjson
 
-// Package gjson provides searching for json strings.
 package gjson
 
 import (
@@ -24,8 +23,6 @@ import (
 	"github.com/tidwall/pretty"
 )
 
-type Type int
-
 const (
 	Null Type = iota
 	False
@@ -33,6 +30,98 @@ const (
 	String
 	True
 	JSON
+)
+
+var (
+	vchars = [256]byte{
+		'"': 2, '{': 3, '(': 3, '[': 3, '}': 1, ')': 1, ']': 1,
+	}
+
+	hexchars = [...]byte{
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'a', 'b', 'c', 'd', 'e', 'f',
+	}
+
+	disableEscapeHTML atomic.Bool
+
+	disableModifiers     = "false"
+	modifiersAreDisabled = disableModifiers == "true"
+
+	stockModifiers    map[string]func(json, arg string) string
+	userModifiers     map[string]func(json, arg string) string
+	userModifiersLock sync.RWMutex
+
+	reverseBufferPool = sync.Pool{
+		New: func() any { return new(reverseBuffer) },
+	}
+)
+
+type (
+	Type int
+
+	Result struct {
+		Raw     string
+		Str     string
+		Indexes []int
+		Type    Type
+		Num     float64
+		Index   int
+	}
+
+	arrayOrMapResult struct {
+		o  map[string]Result
+		oi map[string]any
+		a  []Result
+		ai []any
+		vc byte
+	}
+
+	arrayPathResult struct {
+		query struct {
+			num       float64
+			numParsed bool
+			on        bool
+			all       bool
+			path      string
+			op        string
+			value     string
+		}
+		part    string
+		path    string
+		pipe    string
+		alogkey string
+		piped   bool
+		more    bool
+		alogok  bool
+		arrch   bool
+	}
+
+	objectPathResult struct {
+		part  string
+		path  string
+		pipe  string
+		piped bool
+		wild  bool
+		more  bool
+	}
+
+	subSelector struct {
+		name string
+		path string
+	}
+
+	parseContext struct {
+		json  string
+		pipe  string
+		value Result
+		piped bool
+		calcd bool
+		lines bool
+	}
+
+	reverseBuffer struct {
+		values []Result
+	}
 )
 
 func (t Type) String() string {
@@ -52,15 +141,6 @@ func (t Type) String() string {
 	case JSON:
 		return "JSON"
 	}
-}
-
-type Result struct {
-	Raw     string
-	Str     string
-	Indexes []int
-	Type    Type
-	Num     float64
-	Index   int
 }
 
 func (t Result) String() string {
@@ -361,14 +441,6 @@ func (t Result) Get(path string) Result {
 	}
 
 	return r
-}
-
-type arrayOrMapResult struct {
-	o  map[string]Result
-	oi map[string]any
-	a  []Result
-	ai []any
-	vc byte
 }
 
 func (t Result) arrayOrMap(vc byte, valueize bool) (r arrayOrMapResult) {
@@ -704,15 +776,6 @@ func (t Result) Exists() bool {
 	return t.Type != Null || len(t.Raw) != 0
 }
 
-// Value returns one of these types:
-//
-//	bool, for JSON booleans
-//	float64, for JSON numbers
-//	Number, for JSON numbers
-//	string, for JSON string literals
-//	nil, for JSON null
-//	map[string]interface{}, for JSON objects
-//	[]interface{}, for JSON arrays
 func (t Result) Value() any {
 	if t.Type == String {
 		return t.Str
@@ -890,26 +953,6 @@ func parseLiteral(json string, i int) (int, string) {
 	}
 
 	return i, json[s:]
-}
-
-type arrayPathResult struct {
-	query struct {
-		num       float64
-		numParsed bool
-		on        bool
-		all       bool
-		path      string
-		op        string
-		value     string
-	}
-	part    string
-	path    string
-	pipe    string
-	alogkey string
-	piped   bool
-	more    bool
-	alogok  bool
-	arrch   bool
 }
 
 func parseArrayPath(path string) (r arrayPathResult) {
@@ -1097,15 +1140,6 @@ func isDotPiperChar(s string) bool {
 	return c == '[' || c == '{'
 }
 
-type objectPathResult struct {
-	part  string
-	path  string
-	pipe  string
-	piped bool
-	wild  bool
-	more  bool
-}
-
 func parseObjectPath(path string) (r objectPathResult) {
 	for i := 0; i < len(path); i++ {
 		if path[i] == '|' {
@@ -1184,10 +1218,6 @@ func parseObjectPath(path string) (r objectPathResult) {
 
 	r.part = path
 	return
-}
-
-var vchars = [256]byte{
-	'"': 2, '{': 3, '(': 3, '[': 3, '}': 1, ')': 1, ']': 1,
 }
 
 func parseSquash(json string, i int) (int, string) {
@@ -2126,11 +2156,6 @@ func ForEachLine(json string, iterator func(line Result) bool) {
 	}
 }
 
-type subSelector struct {
-	name string
-	path string
-}
-
 func parseSubSelectors(path string) (sels []subSelector, out string, ok bool) {
 	modifier := 0
 	depth := 1
@@ -2225,11 +2250,6 @@ func isSimpleName(component string) bool {
 	return true
 }
 
-var hexchars = [...]byte{
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'a', 'b', 'c', 'd', 'e', 'f',
-}
-
 func appendHex16(dst []byte, x uint16) []byte {
 	return append(dst,
 		hexchars[x>>12&0xF], hexchars[x>>8&0xF],
@@ -2237,15 +2257,6 @@ func appendHex16(dst []byte, x uint16) []byte {
 	)
 }
 
-// Deprecated: This flag does nothing. Use SetEscapeHTML() instead.
-var DisableEscapeHTML = false
-
-var disableEscapeHTML atomic.Bool
-
-// SetEscapeHTML to enable/disable the automatic escaping of certain
-// "problamatic" HTML characters when encoding to JSON.
-// These character include '>', '<' and '&', which get escaped to \u003e,
-// \u0026, and \u003c respectively.
 func SetEscapeHTML(escapeHTML bool) {
 	disableEscapeHTML.Store(!escapeHTML)
 }
@@ -2310,19 +2321,9 @@ func AppendJSONString(dst []byte, s string) []byte {
 	return append(dst, '"')
 }
 
-type parseContext struct {
-	json  string
-	pipe  string
-	value Result
-	piped bool
-	calcd bool
-	lines bool
-}
-
 func Get(json, path string) Result {
 	if len(path) > 1 {
 		if (path[0] == '@' && !modifiersAreDisabled) || path[0] == '!' {
-			// possible modifier
 			var ok bool
 			var npath string
 			var rjson string
@@ -3047,38 +3048,32 @@ func ValidBytes(json []byte) bool {
 }
 
 func parseUint(s string) (uint64, bool) {
-	var i int
 	if len(s) == 0 || len(s) > 20 {
 		return 0, false
 	}
 
-	if len(s) == 20 && s > "18446744073709551615" {
-		return 18446744073709551615, true
+	if len(s) == 20 {
+		for i := range len(s) {
+			if s[i] < '0' || s[i] > '9' {
+				return 0, false
+			}
+		}
+
+		if s > "18446744073709551615" {
+			return 18446744073709551615, true
+		}
 	}
 
 	var n uint64
-	for ; i < len(s); i++ {
+	for i := range len(s) {
 		if s[i] < '0' || s[i] > '9' {
 			return 0, false
 		}
 
-		next := n*10 + uint64(s[i]-'0')
-		if next < n {
-			goto overflow
-		}
-
-		n = next
+		n = n*10 + uint64(s[i]-'0')
 	}
 
 	return n, true
-overflow:
-
-	for ; i < len(s); i++ {
-		if s[i] < '0' || s[i] > '9' {
-			return 0, false
-		}
-	}
-	return 18446744073709551615, true
 }
 
 func parseInt(s string) (int64, bool) {
@@ -3116,8 +3111,6 @@ func safeInt(f float64) (n int64, ok bool) {
 	return int64(f), true
 }
 
-// execStatic parses the path to find a static value.
-// The input expects that the path already starts with a '!'
 func execStatic(path string) (pathOut, res string, ok bool) {
 	name := path[1:]
 	if len(name) > 0 {
@@ -3224,23 +3217,6 @@ func unwrap(json string) string {
 	return json
 }
 
-// Deprecated: Modifiers can no longer be disabled at runtime. To disable
-// modifiers use the build flag:
-//
-//	-ldflags="-X 'github.com/tidwall/gjson.disableModifiers=true'"
-var DisableModifiers = false
-var disableModifiers = "false"                        // ldflag ("true")
-var modifiersAreDisabled = disableModifiers == "true" // usable feature bool
-
-var stockModifiers map[string]func(json, arg string) string
-var userModifiers map[string]func(json, arg string) string
-var userModifiersLock sync.RWMutex
-
-type modifierMap map[string]func(json, arg string) string
-
-var modifiers atomic.Pointer[modifierMap]
-var modifierMu sync.Mutex
-
 func init() {
 	stockModifiers = map[string]func(json, arg string) string{
 		"pretty":  modPretty,
@@ -3260,23 +3236,16 @@ func init() {
 	userModifiers = map[string]func(json, arg string) string{}
 }
 
-// AddModifier binds a custom modifier command to the GJSON syntax.
-// Provide the name of the modifier without the '@' prefix.
-// The default modifiers, such as 'pretty/this/valid', cannot be
-// overwritten; attempts will simply be ignored.
 func AddModifier(name string, fn func(json, arg string) string) {
 	if stockModifiers[name] != nil {
-		// User wants to overwrite stock modifier. Ignore request
-	} else {
-		userModifiersLock.Lock()
-		userModifiers[name] = fn
-		userModifiersLock.Unlock()
+		return
 	}
+
+	userModifiersLock.Lock()
+	userModifiers[name] = fn
+	userModifiersLock.Unlock()
 }
 
-// getUserModifier return a user-defined modifier.
-// It's noinline to ensure that the caller 'getModifier' remains inline.
-//
 //go:noinline
 func getUserModifier(name string) func(json, arg string) string {
 	userModifiersLock.RLock()
@@ -3303,11 +3272,6 @@ func ModifierExists(name string, fn func(json, arg string) string) bool {
 	userModifiersLock.RUnlock()
 
 	return ok
-}
-
-func loadModifier(name string) (func(string, string) string, bool) {
-	fn, ok := (*modifiers.Load())[name]
-	return fn, ok
 }
 
 func cleanWS(s string) string {
@@ -3360,14 +3324,6 @@ func modThis(json, arg string) string {
 
 func modUgly(json, arg string) string {
 	return bytesString(pretty.Ugly(stringBytes(json)))
-}
-
-type reverseBuffer struct {
-	values []Result
-}
-
-var reverseBufferPool = sync.Pool{
-	New: func() any { return new(reverseBuffer) },
 }
 
 func releaseReverseBuffer(buffer *reverseBuffer) {
@@ -3768,12 +3724,7 @@ func bytesString(b []byte) string {
 }
 
 func revSquash(json string) string {
-	// reverse squash
-	// expects that the tail character is a ']' or '}' or ')' or '"'
-	// squash the value, ignoring all nested arrays and objects.
 	if len(json) == 0 {
-		// Nothing to squash. Path can walk past the start of the document on
-		// malformed JSON (#400); guard against json[len(json)-1] panicking.
 		return json
 	}
 	i := len(json) - 1
