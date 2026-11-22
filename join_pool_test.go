@@ -70,6 +70,7 @@ func TestJoinPoolParallel(t *testing.T) {
 func TestEmptyModifierAllocations(t *testing.T) {
 	for _, tc := range []struct{ doc, path, want string }{
 		{`[]`, "@join", `{}`},
+		{`[{}, { }]`, `@join:{"preserve":true}`, `{}`},
 		{`[]`, "@flatten", `[]`},
 		{`{}`, "@keys", `[]`},
 		{`{}`, "@values", `[]`},

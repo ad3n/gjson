@@ -84,26 +84,30 @@ func TestNumericQueryCompatibility(t *testing.T) {
 }
 
 func TestGetBytesOwnershipAfterDecode(t *testing.T) {
-	for _, doc := range []string{
-		``,
-		`{}`,
-		`{"v":""}`,
-		`{"v":null}`,
-		`{"v":false}`,
-		`{"v":123}`,
-		`{"v":{"nested":true}}`,
-		`{"v":"plain"}`,
-		`{"v":"hello\nworld"}`,
-		`{"v":"\ud83d\ude00"}`,
-		`{"v":"` + strings.Repeat("abc", 100) + `\n"}`,
+	for _, tc := range []struct{ doc, path string }{
+		{``, "v"},
+		{`{}`, "v"},
+		{`{"v":""}`, "v"},
+		{`{"v":null}`, "v"},
+		{`{"v":false}`, "v"},
+		{`{"v":123}`, "v"},
+		{`{"v":{"nested":true}}`, "v"},
+		{`{"v":"plain"}`, "v"},
+		{`{"v":"hello\nworld"}`, "v"},
+		{`{"v":"\ud83d\ude00"}`, "v"},
+		{`{"v":"` + strings.Repeat("abc", 100) + `\n"}`, "v"},
+		{`{"v":"plain"}`, "@this|v"},
+		{`["plain","hello\nworld"]`, "@reverse|0"},
+		{`["hello\nworld","plain"]`, "@reverse|0"},
+		{`{}`, `!"static"`},
 	} {
-		data := []byte(doc)
-		want := Get(doc, "v")
-		got := GetBytes(data, "v")
+		data := []byte(tc.doc)
+		want := Get(tc.doc, tc.path)
+		got := GetBytes(data, tc.path)
 		clear(data)
 
 		if !reflect.DeepEqual(got, want) {
-			t.Fatalf("input mutation changed result: got %#v, want %#v", got, want)
+			t.Fatalf("input mutation changed %s result: got %#v, want %#v", tc.path, got, want)
 		}
 	}
 }

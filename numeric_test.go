@@ -21,13 +21,13 @@ func TestParseUintInvalidTwentyBytes(t *testing.T) {
 }
 
 func FuzzParseUint(f *testing.F) {
-	for _, input := range []string{"", "0", "00000000000000000001", "18446744073709551615", "18446744073709551616", "99999999999999999999", "2026-09-17T18:04:00Z"} {
+	for _, input := range []string{"", "0", "00000000000000000001", "0000000000000000000001", "0000000000000000000000", "00018446744073709551616", "00000000000000000000x", "100000000000000000000", "18446744073709551615", "18446744073709551616", "99999999999999999999", "2026-09-17T18:04:00Z"} {
 		f.Add(input)
 	}
 
 	f.Fuzz(func(t *testing.T, input string) {
 		var want uint64
-		valid := len(input) > 0 && len(input) <= 20
+		valid := len(input) > 0 && len(strings.TrimLeft(input, "0")) <= 20
 		for i := range len(input) {
 			if input[i] < '0' || input[i] > '9' {
 				valid = false

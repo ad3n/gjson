@@ -1766,45 +1766,49 @@ func TestArrayCountRawOutput(t *testing.T) {
 }
 
 func TestParseQuery(t *testing.T) {
-	var path, op, value, remain string
+	var path, op, value string
+	var end int
 	var ok bool
 
-	path, op, value, remain, _, _, ok =
-		parseQuery(`#(service_roles.#(=="one").()==asdf).cap`)
+	query := `#(service_roles.#(=="one").()==asdf).cap`
+	path, op, value, end, _, ok = parseQuery(query)
 	assert(t, ok &&
 		path == `service_roles.#(=="one").()` &&
 		op == "=" &&
 		value == `asdf` &&
-		remain == `.cap`)
+		query[end:] == `.cap`)
 
-	path, op, value, remain, _, _, ok = parseQuery(`#(first_name%"Murphy").last`)
+	query = `#(first_name%"Murphy").last`
+	path, op, value, end, _, ok = parseQuery(query)
 	assert(t, ok &&
 		path == `first_name` &&
 		op == `%` &&
 		value == `"Murphy"` &&
-		remain == `.last`)
+		query[end:] == `.last`)
 
-	path, op, value, remain, _, _, ok = parseQuery(`#( first_name !% "Murphy" ).last`)
+	query = `#( first_name !% "Murphy" ).last`
+	path, op, value, end, _, ok = parseQuery(query)
 	assert(t, ok &&
 		path == `first_name` &&
 		op == `!%` &&
 		value == `"Murphy"` &&
-		remain == `.last`)
+		query[end:] == `.last`)
 
-	path, op, value, remain, _, _, ok = parseQuery(`#(service_roles.#(=="one"))`)
+	query = `#(service_roles.#(=="one"))`
+	path, op, value, end, _, ok = parseQuery(query)
 	assert(t, ok &&
 		path == `service_roles.#(=="one")` &&
 		op == `` &&
 		value == `` &&
-		remain == ``)
+		query[end:] == ``)
 
-	path, op, value, remain, _, _, ok =
-		parseQuery(`#(a\("\"(".#(=="o\"(ne")%"ab\")").remain`)
+	query = `#(a\("\"(".#(=="o\"(ne")%"ab\")").remain`
+	path, op, value, end, _, ok = parseQuery(query)
 	assert(t, ok &&
 		path == `a\("\"(".#(=="o\"(ne")` &&
 		op == "%" &&
 		value == `"ab\")"` &&
-		remain == `.remain`)
+		query[end:] == `.remain`)
 }
 
 func TestParentSubQuery(t *testing.T) {
@@ -2829,4 +2833,16 @@ func TestIssue405(t *testing.T) {
 	assert(t, Parse("99999999999999999.99").Uint() == 100000000000000000)
 	assert(t, Parse("abcdefghijklmnopqrst").Uint() == 0)
 	assert(t, Parse("abcdefghijklmnopqrst").Int() == 0)
+}
+
+func TestIssue406(t *testing.T) {
+	assert(t, Parse(`"0000009007199254740993"`).Int() == 9007199254740993)
+	assert(t, Parse(`"0000009007199254740993"`).Uint() == 9007199254740993)
+}
+
+func TestIssue407(t *testing.T) {
+	assert(t, Get(`[{}, {"a":1}]`, `@join:{"preserve":true}`).Raw == `{"a":1}`)
+	assert(t, Get(`[{"a":1}, {}]`, `@join:{"preserve":true}`).Raw == `{"a":1}`)
+	assert(t, Get(`[{}, {}]`, `@join:{"preserve":true}`).Raw == `{}`)
+	assert(t, Get(`[{ }, {"a":1}, { }, {"a":2}, { }]`, `@join:{"preserve":true}`).Raw == `{"a":1,"a":2}`)
 }
